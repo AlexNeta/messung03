@@ -1,0 +1,217 @@
+#: import ListAdapter kivy.adapters.listadapter.ListAdapter
+#: import ListItemButton kivy.uix.listview.ListItemButton
+
+<Loading@Image>:
+    source: "icons/b_pxl.png"
+
+<Instr@ListView>:
+    canvas:
+        Color:
+            rgba: 1, .7, 0, 1
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
+    adapter:
+        ListAdapter(data=[""], cls=ListItemButton)
+
+
+<Set@Popup>:
+    instr_list_view: instr_list
+    load_icon_view: load_icon
+    size_hint: .9, .9
+    auto_dismiss: False
+    title: "Instrument Settings"
+    BoxLayout:
+        spacing: 10
+        orientation: "vertical"
+        Label:
+            text: "Select an Instrument to connect"
+            size_hint_y: 0.2
+            font_size: "30sp"
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 30
+            BoxLayout:
+                orientation: "vertical"
+                spacing: 50
+                Loading:
+                    id: load_icon
+                Button:
+                    size_hint_y: None
+                    height: 40
+                    text: "Connect to Instrument"
+                    on_release: root.connect_to_instrument()
+                Button:
+                    size_hint_y: None
+                    height: 40
+                    text: "Close"
+                    on_release: root.dismiss()
+            BoxLayout:
+                orientation: "vertical"
+                spacing: 3
+                Label:
+                    text: "Currently connected Instruments:"
+                    size_hint_y: .05
+                Instr:
+                    id: instr_list
+
+<New@Popup>:
+    size_hint: .5, .5
+    auto_dismiss: False
+    title: "New File"
+    BoxLayout:
+        spacing: 10
+        orientation: "vertical"
+        Label:
+            text: "Start new File?"
+        Label:
+            text: "[color=ff0000]ALL current Measurements will be deleted![/color]"
+            markup: True
+        Label:
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 40
+            height: 40
+            Button:
+                text: "Yes"
+                on_release: root.make_new_file()
+            Button:
+                text: "Cancel"
+                on_release: root.dismiss()
+
+<Save@Popup>:
+    size_hint: .9, .9
+    auto_dismiss: False
+    title: "Save all Measurements in Directory: " + filechooser.path
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 15
+        FileChooserIconView:
+            id: filechooser
+            path: root.save_dire
+            show_hidden: False
+            canvas:
+                Color:
+                    rgba: 1, .7, 0, 1
+                Line:
+                    width: 1
+                    rectangle: 0, 0, self.width, self.height
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: 35
+            Label:
+                size_hint_x: None
+            Label:
+                text: "File Name:"
+            TextInput:
+                id: name
+                multiline: False
+                text: root.save_name
+            Label:
+                text: ".xlsx"
+            Label:
+                size_hint_x: None
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            size_hint_y: None
+            height: 40
+            Button:
+                text: "Save Directory"
+                on_release: root.save_file_name(name.text + ".xlsx", filechooser.path)
+            Button:
+                text: "Cancel"
+                on_release: root.dismiss()
+
+<About@Popup>:
+    size_hint: .4, .5
+    auto_dismiss: False
+    title: "About"
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 10
+        canvas:
+            Color:
+                rgba: 1, .7, 0, 1
+            Line:
+                width: 3
+                rectangle: self.x, self.y, self.width, self.height
+        Label:
+            text: "Last Updated: 15.03.2018"
+        Label:
+            text: "Made with Kivy"
+        Label:
+            text: "For In-House use only"
+        Button:
+            text: "Close"
+            on_release: root.dismiss()
+
+<ToolBar>:
+    rows: 1
+    size_hint_y: None
+    height: 64
+    BoxLayout:
+        spacing: 10
+        canvas:
+            Color:
+                rgba: 0.3, 0.3, 0.3, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Button:
+            background_normal: "icons/settings_a.png"
+            background_down: "icons/settings_a.png"
+            opacity: 1 if self.state == 'normal' else .5
+            size_hint_x: None
+            width: 64
+            on_release: root.set_instrument()
+        Button:
+            background_normal: "icons/New_a.png"
+            background_down: "icons/New_a.png"
+            opacity: 1 if self.state == 'normal' else .5
+            size_hint_x: None
+            width: 64
+            on_release: root.new_file()
+        Button:
+            background_normal: "icons/floppy_a.png"
+            background_down: "icons/floppy_a.png"
+            opacity: 1 if self.state == 'normal' else .5
+            size_hint_x: None
+            width: 64
+            on_release: root.save_file()
+        Label:
+        Button:
+            background_normal: "icons/led_linear_logo_neu.png"
+            background_down: "icons/led_linear_logo_neu.png"
+            opacity: 1 if self.state == 'normal' else .5
+            size_hint_x: None
+            width: 250
+            on_release: root.about()
+
+# _____________________________________________________________________________________________________________________
+# Main
+
+<Bulb@Image>:
+    source: "icons/bulb.png"
+
+MainWindow:
+
+<MainWindow>:
+    switch_start: switch_start
+    toolbar: toolbar
+    bulb: bulb
+
+    orientation: "vertical"
+    spacing: 1
+    ToolBar:
+        id: toolbar
+
+    BoxLayout:
+        orientation: "horizontal"
+        Switch:
+            id: switch_start
+            on_active: root.start_measurement(self.active)
+        Bulb:
+            id: bulb
