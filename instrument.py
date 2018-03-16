@@ -17,7 +17,7 @@ class Instrument:
             self.hmp = self.rm.open_resource(instr_name)
             self.hmp.timeout = 1000
             # If the device returns id, then its connected:
-            if self.get_id() != []:
+            if self.get_id() != "":
                 return True
             else:
                 return False
