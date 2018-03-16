@@ -178,6 +178,7 @@ class MainWindow(BoxLayout):
         self.measurement()
     
     def end_measurement(self):
+
         self.instrument.instr_off(0)
         self.instrument.gen_off()
         self.bulb.color = [1, 0, 0, 1]
