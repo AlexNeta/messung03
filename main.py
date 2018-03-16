@@ -89,10 +89,13 @@ class Set(Popup):
                     self.toolbar.parent.save_settings()
                     self.load_icon_view.found()
                 except Exception:
+                    self.device_id = ""
                     self.load_icon_view.not_found()
             else:
+                self.device_id = ""
                 self.load_icon_view.not_found()
         else:
+            self.device_id = ""
             self.load_icon_view.not_found()
 
 
