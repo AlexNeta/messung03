@@ -70,6 +70,7 @@ class Set(Popup):
     instr_list_view = ObjectProperty()
     load_icon_view = ObjectProperty()
     toolbar = ObjectProperty()
+    device_id = StringProperty("")
 
     def build(self, toolbar_parent):
         self.toolbar = toolbar_parent
@@ -83,7 +84,7 @@ class Set(Popup):
             # Connect to Selected Instrument
             if self.toolbar.parent.instrument.connect_to_device(selection):
                 try:
-                    print(self.toolbar.parent.instrument.get_id())
+                    self.device_id = self.toolbar.parent.instrument.get_id()
                     self.toolbar.parent.instr_name = selection
                     self.toolbar.parent.save_settings()
                     self.load_icon_view.found()
@@ -178,7 +179,6 @@ class MainWindow(BoxLayout):
         self.measurement()
     
     def end_measurement(self):
-
         self.instrument.instr_off(0)
         self.instrument.gen_off()
         self.bulb.color = [1, 0, 0, 1]
