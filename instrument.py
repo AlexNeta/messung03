@@ -1,5 +1,4 @@
 import visa
-import numpy as np
 
 
 class Instrument:
