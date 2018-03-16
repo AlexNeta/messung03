@@ -90,7 +90,10 @@ class Set(Popup):
                     self.load_icon_view.found()
                 except Exception:
                     self.load_icon_view.not_found()
-        self.load_icon_view.not_found()
+            else:
+                self.load_icon_view.not_found()
+        else:
+            self.load_icon_view.not_found()
 
 
 class ToolBar(GridLayout):
