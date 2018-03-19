@@ -34,6 +34,7 @@
         spacing: 10
         orientation: "vertical"
         Label:
+            # hex( ord('ä') )
             text: "Das Ger\u00e4t zum verbinden ausw\u00e4hlen"
             size_hint_y: 0.2
             font_size: "30sp"
@@ -253,6 +254,7 @@ MainWindow:
                 id: buttons_label
             Label:
                 size_hint_y: None
-                height: 35
+                height: 300
                 text: root.meas_message
+                font_size: "30sp"
             Label:

@@ -154,6 +154,7 @@ class MainWindow(BoxLayout):
     tester_name = StringProperty()  # Name des Testers
     meas_number = StringProperty()  # Name der Messung
     number_light = StringProperty()  # Anzahl Leuchten (int)
+    curr_light = NumericProperty()  # Aktuelle Leuchte (int)
     # Measurement-Switch:
     buttons_label = ObjectProperty()
     switch_start = ObjectProperty()
@@ -197,10 +198,11 @@ class MainWindow(BoxLayout):
 
     def init_measurement(self, dt):
         if self.tester_name == "" or self.meas_number == "" or self.number_light == "":
-            self.meas_message = "Bitte neue Messung einrichten (weißes Blatt anklicken)"
+            self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)"
         else:
             self.switch_start = Switch(size_hint_y=None, height=35)
             self.buttons_label.add_widget(self.switch_start)
+            self.curr_light = 1  # Start at 1
             Clock.schedule_interval(self.start_measurement, 1./60.)
             Clock.unschedule(self.init_measurement)
 
@@ -208,21 +210,22 @@ class MainWindow(BoxLayout):
         if self.instrument.connected and self.switch_start.active:
             self.meas_message = "Messung wurde gestartet"
             self.buttons_label.remove_widget(self.switch_start)
-            Clock.schedule_interval(self.get_data, 1./60.)
+            self.init_channel()
             Clock.unschedule(self.start_measurement)
         elif not self.instrument.connected:
-                self.meas_message = "Kein Gerät eingerichtet"
+                self.meas_message = "Kein Gerät eingerichtet\n(Oben links einstellen)"
+
+    def init_channel(self):
+        self.instrument.instr_on(0)
+        self.instrument.gen_on()
+        Clock.schedule_once(self.get_data, 2)
 
     def get_data(self, dt):
-        self.measurement()
+        self.meas_message = "Bitte Anschließen der {}/{} Leuchte".format(self.curr_light, self.number_light)
     
     def end_measurement(self):
         self.instrument.instr_off(0)
         self.instrument.gen_off()
-
-    def measurement(self):
-        self.instrument.instr_on(0)
-        self.instrument.gen_on()
 
 
 class MeasurementApp(App):
