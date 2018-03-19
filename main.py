@@ -131,13 +131,18 @@ class ToolBar(GridLayout):
 # Main
 class MainWindow(BoxLayout):
     toolbar = ObjectProperty()
+    # Settings:
     instr_name = StringProperty("")  # Save in settings
     save_dire = StringProperty("")  # Save in settings
     save_name = StringProperty("Untitled.xlsx")  # Save in settings
     saved_as = StringProperty("")
+    # Instrument:
     instrument = ObjectProperty()
-
+    # Measurement-Switch:
+    switch_start = ObjectProperty()
+    # Messages:
     bulb = ObjectProperty()
+    meas_message = StringProperty()
 
     def build(self):
         self.instrument = Instrument()
@@ -175,11 +180,15 @@ class MainWindow(BoxLayout):
     # Measurement
 
     def start_measurement(self, active):
-        if active:
+        if active and self.instrument.connected:
             Clock.schedule_interval(self.get_data, 1./60.)
         else:
             Clock.unschedule(self.get_data)
-            self.end_measurement()
+            if self.instrument.connected:
+                self.end_measurement()
+            else:
+                self.meas_message = "No instrument connected"
+            self.switch_start.active = False
 
     def get_data(self, dt):
         self.measurement()

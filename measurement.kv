@@ -143,8 +143,6 @@
         Label:
             text: "Last Updated: 15.03.2018"
         Label:
-            text: "Made with Kivy"
-        Label:
             text: "For In-House use only"
         Button:
             text: "Close"
@@ -212,8 +210,14 @@ MainWindow:
 
     BoxLayout:
         orientation: "horizontal"
-        Switch:
-            id: switch_start
-            on_active: root.start_measurement(self.active)
+        BoxLayout:
+            orientation: "vertical"
+            Switch:
+                id: switch_start
+                on_active: root.start_measurement(self.active)
+            Label:
+                size_hint_y: None
+                height: 35
+                text: root.meas_message
         Bulb:
             id: bulb

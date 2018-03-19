@@ -5,7 +5,10 @@ class Instrument:
     # _____________________________________________________________________________________________________________________
     # Initialize instrument
     def __init__(self):
-        self.rm = visa.ResourceManager('@py')
+        try:
+            self.rm = visa.ResourceManager('@py')
+        except ValueError:
+            self.rm = visa.ResourceManager()
         self.hmp = None
         self.connected = False
 
@@ -31,23 +34,19 @@ class Instrument:
     # Main Control Parts
 
     def ch_set(self, ch_nr, volt=None, curr=None):
-        if self.connected:
-            self.hmp.write("INST:NSEL " + str(ch_nr + 1))
+        self.hmp.write("INST:NSEL " + str(ch_nr + 1))
 
-            if volt is not None:
-                self.hmp.write("VOLT " + str(volt))
+        if volt is not None:
+            self.hmp.write("VOLT " + str(volt))
 
-            if curr == "MAX" or curr == "max":
-                self.hmp.write("CURR MAX")
-            elif curr is not None:
-                self.hmp.write("CURR " + str(curr))
+        if curr == "MAX" or curr == "max":
+            self.hmp.write("CURR MAX")
+        elif curr is not None:
+            self.hmp.write("CURR " + str(curr))
 
     def ch_measure(self, ch_nr):
-        if self.connected:
-            self.hmp.write("INST:NSEL " + str(ch_nr + 1))
-            return float(self.hmp.ask("MEASure:VOLT[:DC]?")), float(self.hmp.ask("MEAS:CURR[:DC]?"))
-        else:
-            return None, None
+        self.hmp.write("INST:NSEL " + str(ch_nr + 1))
+        return float(self.hmp.ask("MEASure:VOLT[:DC]?")), float(self.hmp.ask("MEAS:CURR[:DC]?"))
 
     def all_off(self):
         self.gen_off()
@@ -55,19 +54,15 @@ class Instrument:
             self.instr_off(i)
 
     def instr_off(self, ch_nr):
-        if self.connected:
-            self.hmp.write("INST:NSEL " + str(ch_nr + 1))
-            self.hmp.write("OUTP:SEL OFF")
+        self.hmp.write("INST:NSEL " + str(ch_nr + 1))
+        self.hmp.write("OUTP:SEL OFF")
 
     def gen_off(self):
-        if self.connected:
-            self.hmp.write("OUTP:GEN OFF")
+        self.hmp.write("OUTP:GEN OFF")
 
     def instr_on(self, ch_nr):
-        if self.connected:
-            self.hmp.write("INST:NSEL " + str(ch_nr + 1))
-            self.hmp.write("OUTP:SEL ON")
+        self.hmp.write("INST:NSEL " + str(ch_nr + 1))
+        self.hmp.write("OUTP:SEL ON")
 
     def gen_on(self):
-        if self.connected:
-            self.hmp.write("OUTP:GEN ON")
+        self.hmp.write("OUTP:GEN ON")
