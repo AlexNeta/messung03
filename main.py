@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from instrument import Instrument
 import xlsxwriter
 from csv import reader, writer, QUOTE_MINIMAL
@@ -10,6 +12,7 @@ from kivy.uix.image import Image
 from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty, StringProperty, ListProperty
 from kivy.clock import Clock
 from kivy.uix.listview import ListView
+from kivy.uix.switch import Switch
 # _____________________________________________________________________________________________________________________
 # Toolbar
 
@@ -25,10 +28,20 @@ class About(Popup):
 class New(Popup):
     toolbar = ObjectProperty()
 
+    tester_name = StringProperty()
+    meas_number = StringProperty()
+    number_light = StringProperty()
+
     def build(self, toolbar_parent):
         self.toolbar = toolbar_parent
+        self.tester_name = self.toolbar.parent.tester_name
+        self.meas_number = self.toolbar.parent.meas_number
+        self.number_light = self.toolbar.parent.number_light
 
-    def make_new_file(self):
+    def make_new_file(self, name, meas_number, number_light):
+        self.toolbar.parent.tester_name = name
+        self.toolbar.parent.meas_number = meas_number
+        self.toolbar.parent.number_light = number_light
         self.dismiss()
 
 
@@ -100,7 +113,6 @@ class Set(Popup):
 
 
 class ToolBar(GridLayout):
-    safety_lock = BooleanProperty(False)
     mode = StringProperty("")
 
     def set_instrument(self):
@@ -138,16 +150,20 @@ class MainWindow(BoxLayout):
     saved_as = StringProperty("")
     # Instrument:
     instrument = ObjectProperty()
+    # Setup:
+    tester_name = StringProperty()  # Name des Testers
+    meas_number = StringProperty()  # Name der Messung
+    number_light = StringProperty()  # Anzahl Leuchten (int)
     # Measurement-Switch:
+    buttons_label = ObjectProperty()
     switch_start = ObjectProperty()
     # Messages:
-    bulb = ObjectProperty()
     meas_message = StringProperty()
 
     def build(self):
         self.instrument = Instrument()
         self.get_measurement_data()
-        self.bulb.color = [1, 0, 0, 1]
+        Clock.schedule_interval(self.init_measurement, 1. / 10.)
 
     def get_measurement_data(self):
         try:
@@ -179,16 +195,23 @@ class MainWindow(BoxLayout):
     # _________________________________________________________________________________________________________________
     # Measurement
 
-    def start_measurement(self, active):
-        if active and self.instrument.connected:
-            Clock.schedule_interval(self.get_data, 1./60.)
+    def init_measurement(self, dt):
+        if self.tester_name == "" or self.meas_number == "" or self.number_light == "":
+            self.meas_message = "Bitte neue Messung einrichten (weißes Blatt anklicken)"
         else:
-            Clock.unschedule(self.get_data)
-            if self.instrument.connected:
-                self.end_measurement()
-            else:
-                self.meas_message = "No instrument connected"
-            self.switch_start.active = False
+            self.switch_start = Switch(size_hint_y=None, height=35)
+            self.buttons_label.add_widget(self.switch_start)
+            Clock.schedule_interval(self.start_measurement, 1./60.)
+            Clock.unschedule(self.init_measurement)
+
+    def start_measurement(self, dt):
+        if self.instrument.connected and self.switch_start.active:
+            self.meas_message = "Messung wurde gestartet"
+            self.buttons_label.remove_widget(self.switch_start)
+            Clock.schedule_interval(self.get_data, 1./60.)
+            Clock.unschedule(self.start_measurement)
+        elif not self.instrument.connected:
+                self.meas_message = "Kein Gerät eingerichtet"
 
     def get_data(self, dt):
         self.measurement()
@@ -196,12 +219,10 @@ class MainWindow(BoxLayout):
     def end_measurement(self):
         self.instrument.instr_off(0)
         self.instrument.gen_off()
-        self.bulb.color = [1, 0, 0, 1]
 
     def measurement(self):
         self.instrument.instr_on(0)
         self.instrument.gen_on()
-        self.bulb.color = [0, 1, 0, 1]
 
 
 class MeasurementApp(App):
@@ -215,3 +236,14 @@ class MeasurementApp(App):
 
 if __name__ == "__main__":
     MeasurementApp().run()
+
+"""
+            Switch:
+                size_hint_y: None
+                height: 35
+                id: switch_start
+                on_active: root.start_measurement(self.active)
+         Label:
+            text: "[color=ff0000]ALL current Measurements will be deleted![/color]"
+            markup: True
+"""

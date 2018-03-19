@@ -14,6 +14,15 @@
     adapter:
         ListAdapter(data=[""], cls=ListItemButton)
 
+<SmallLabel@Label>:
+    size_hint_y: None
+    height: 35
+
+<SmallInput@TextInput>:
+    size_hint_y: None
+    height: 35
+    multiline: False
+
 
 <Set@Popup>:
     instr_list_view: instr_list
@@ -25,9 +34,10 @@
         spacing: 10
         orientation: "vertical"
         Label:
-            text: "Select an Instrument to connect"
+            text: "Das Ger\u00e4t zum verbinden ausw\u00e4hlen"
             size_hint_y: 0.2
             font_size: "30sp"
+            color: 1, .7, 0, 1
         BoxLayout:
             orientation: "horizontal"
             spacing: 30
@@ -41,50 +51,79 @@
                 Button:
                     size_hint_y: None
                     height: 40
-                    text: "Connect to Instrument"
+                    text: "Verbinden zum Ger\u00e4t"
                     on_release: root.connect_to_instrument()
                 Button:
                     size_hint_y: None
                     height: 40
-                    text: "Close"
+                    text: "Schlie\u00dfen"
                     on_release: root.dismiss()
             BoxLayout:
                 orientation: "vertical"
                 spacing: 3
                 Label:
-                    text: "Currently connected Instruments:"
+                    text: "Derzeit verbundene Ger\u00e4te:"
                     size_hint_y: .05
                 Instr:
                     id: instr_list
 
 <New@Popup>:
-    size_hint: .5, .5
     auto_dismiss: False
-    title: "New File"
+    title: "Neue Messung"
+
     BoxLayout:
         spacing: 10
         orientation: "vertical"
         Label:
-            text: "Start new File?"
-        Label:
-            text: "[color=ff0000]ALL current Measurements will be deleted![/color]"
-            markup: True
+            text: "Neue Messung Einrichten"
+            size_hint_y: 0.2
+            font_size: "30sp"
+            color: 1, .7, 0, 1
+        BoxLayout:
+            orientation: "horizontal"
+            BoxLayout:
+                orientation: "vertical"
+                SmallLabel:
+                    text: "Name des Pr\u00fcfers:"
+                SmallLabel:
+                    text: "Pr\u00fcfnummer:"
+                SmallLabel:
+                    text: "Anzahl an Leuchten:"
+            BoxLayout:
+                orientation: "vertical"
+                SmallInput:
+                    id: name
+                    text: root.tester_name
+                SmallInput:
+                    id: meas_number
+                    text: root.meas_number
+                SmallInput:
+                    id: number_light
+                    input_filter: "int"
+                    text: root.number_light
+
         Label:
         BoxLayout:
             orientation: "horizontal"
             spacing: 40
             height: 40
+            Label:
             Button:
-                text: "Yes"
-                on_release: root.make_new_file()
+                size_hint: None, None
+                size: 100, 40
+                text: "Best\u00e4tingen"
+                on_release: root.make_new_file(name.text, meas_number.text, number_light.text)
             Button:
-                text: "Cancel"
+                size_hint: None, None
+                size: 100, 40
+                text: "Abbrechen"
                 on_release: root.dismiss()
+            Label:
 
 <Save@Popup>:
     size_hint: .9, .9
     auto_dismiss: False
-    title: "Save all Measurements in Directory: " + filechooser.path
+    title: "Alle Messungen werden gespeichert in: " + filechooser.path
     BoxLayout:
         orientation: "vertical"
         spacing: 15
@@ -120,10 +159,10 @@
             size_hint_y: None
             height: 40
             Button:
-                text: "Save Directory"
+                text: "Speicherort ausw\u00e4hlen"
                 on_release: root.save_file_name(name.text + ".xlsx", filechooser.path)
             Button:
-                text: "Cancel"
+                text: "Abbrechen"
                 on_release: root.dismiss()
 
 <About@Popup>:
@@ -141,11 +180,11 @@
                 width: 3
                 rectangle: self.x, self.y, self.width, self.height
         Label:
-            text: "Last Updated: 15.03.2018"
+            text: "Zuletzt ge\u00e4ndert am: 15.03.2018"
         Label:
-            text: "For In-House use only"
+            text: "Nur für In-House Nutzung"
         Button:
-            text: "Close"
+            text: "Schlie\u00dfen"
             on_release: root.dismiss()
 
 <ToolBar>:
@@ -193,15 +232,11 @@
 # _____________________________________________________________________________________________________________________
 # Main
 
-<Bulb@Image>:
-    source: "icons/bulb.png"
-
 MainWindow:
 
 <MainWindow>:
-    switch_start: switch_start
+    buttons_label: buttons_label
     toolbar: toolbar
-    bulb: bulb
 
     orientation: "vertical"
     spacing: 1
@@ -212,12 +247,12 @@ MainWindow:
         orientation: "horizontal"
         BoxLayout:
             orientation: "vertical"
-            Switch:
-                id: switch_start
-                on_active: root.start_measurement(self.active)
+            Label:
+            BoxLayout:
+                orientation: "vertical"
+                id: buttons_label
             Label:
                 size_hint_y: None
                 height: 35
                 text: root.meas_message
-        Bulb:
-            id: bulb
+            Label:
