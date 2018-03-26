@@ -177,7 +177,7 @@ class MainWindow(BoxLayout):
 
     def load_settings(self):
         save_file = []
-        with open("settings.csv", "r", newline="") as csv_file:
+        with open("~/settings.csv", "r", newline="") as csv_file:
             r = reader(csv_file, delimiter=" ", quotechar="|")
             for x in r:
                 save_file.append("".join(x))
@@ -189,7 +189,7 @@ class MainWindow(BoxLayout):
         # Save data
         save_file = self.save_dire, self.save_name, self.instr_name
 
-        with open("settings.csv", "w", newline="") as csv_file:
+        with open("~/settings.csv", "w", newline="") as csv_file:
             r = writer(csv_file, delimiter=" ", quotechar="|", quoting=QUOTE_MINIMAL)
             for x in save_file:
                 r.writerow(x)
