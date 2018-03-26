@@ -208,13 +208,15 @@ class MainWindow(BoxLayout):
             Clock.unschedule(self.init_measurement)
 
     def start_measurement(self, dt):
+        if self.instrument.connected:
+            self.meas_message = "Gerät erkannt\nMessung kann gestartet werden"
         if self.instrument.connected and self.switch_start.active:
             self.meas_message = "Messung wurde gestartet"
             self.buttons_label.remove_widget(self.switch_start)
             self.init_channel()
             Clock.unschedule(self.start_measurement)
         elif not self.instrument.connected:
-                self.meas_message = "Kein Gerät eingerichtet\n(Oben links einstellen)"
+            self.meas_message = "Kein Gerät eingerichtet\n(Oben links einstellen)"
 
     def init_channel(self):
         self.instrument.instr_on(0)
