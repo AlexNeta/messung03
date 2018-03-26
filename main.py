@@ -165,6 +165,7 @@ class MainWindow(BoxLayout):
         self.instrument = Instrument()
         self.get_measurement_data()
         Clock.schedule_interval(self.init_measurement, 1. / 10.)
+        Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
 
     def get_measurement_data(self):
         try:
