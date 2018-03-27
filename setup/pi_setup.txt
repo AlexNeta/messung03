@@ -1,0 +1,13 @@
+# Keyboard
+sudo nano /etc/default/keyboard
+# Change to "de"
+
+# Add fixed_cursor.py in ~/.kivy/mods/
+# or in /home/pi/.kivy/mods/
+sudo nano ~/.kivy/config.ini
+# Add in [modules]
+fixed_cursor = size=30x30
+
+# Usefull:
+# Directory of kivy:
+# /usr/local/lib/python3.5/distr-packages/kivy/modules
