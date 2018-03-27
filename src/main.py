@@ -2,13 +2,15 @@
 
 from src.instrument import Instrument
 from csv import reader, writer, QUOTE_MINIMAL
+from os.path import _getfullpathname as get_path
+import openpyxl as oxl
 
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
-from kivy.properties import NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty, DictProperty, ListProperty
 from kivy.clock import Clock
 from kivy.uix.listview import ListView
 from kivy.uix.switch import Switch
@@ -147,6 +149,9 @@ class MainWindow(BoxLayout):
     save_dire = StringProperty("")  # Save in settings
     save_name = StringProperty("Untitled.xlsx")  # Save in settings
     saved_as = StringProperty("")
+    # From-Excel-Files
+    personal = ListProperty()
+    leuchten = DictProperty()
     # Instrument:
     instrument = ObjectProperty()
     # Setup:
@@ -161,52 +166,94 @@ class MainWindow(BoxLayout):
     meas_message = StringProperty()
 
     def build(self):
+        # Startvorgang des Programms:
         self.instrument = Instrument()
+        # Laden der Einstellungen:
         self.get_measurement_data()
-        Clock.schedule_interval(self.init_measurement, 1. / 10.)
+        # Verbinden zum Gerät:
+        if self.instrument.connect_to_device(self.instr_name):
+            print("Verbindung zum gerät hergestellt")
+        else:
+            print("Keine Verbindung zum Gerät möglich")
+        # Laden der Excel-Dateien:
+        self.load_from_excel()
+        # Sequenz zur Erkennung ob Daten ausgefüllt wurden:
+        Clock.schedule_interval(lambda dt: self.init_measurement(), 1. / 10.)
+        # Starten des ersten Fensters zum ausfüllen der Daten:
         Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
 
     def get_measurement_data(self):
+        print("Laden der Einstellungen aus:")
+        print(get_path("src\\settings.csv"))
         try:
             self.load_settings()
+            print("Laden erfolgreich!")
         except Exception:
+            print("Laden war nicht möglich!")
             pass
     # _________________________________________________________________________________________________________________
     # Settings
 
     def load_settings(self):
         save_file = []
-        with open("settings.csv", "r", newline="") as csv_file:
+        with open(get_path("src\\settings.csv"), "r", newline="") as csv_file:
             r = reader(csv_file, delimiter=" ", quotechar="|")
             for x in r:
                 save_file.append("".join(x))
         # Load data
+        print("Einstellungen:", save_file)
         self.save_dire, self.save_name, self.instr_name = save_file
-        self.instrument.connect_to_device(self.instr_name)  # Connect to instrument
 
     def save_settings(self):
         # Save data
         save_file = self.save_dire, self.save_name, self.instr_name
 
-        with open("settings.csv", "w", newline="") as csv_file:
+        with open(get_path("src\\settings.csv"), "w", newline="") as csv_file:
             r = writer(csv_file, delimiter=" ", quotechar="|", quoting=QUOTE_MINIMAL)
             for x in save_file:
                 r.writerow(x)
 
     # _________________________________________________________________________________________________________________
+    # Loading from Excel-Files
+
+    def load_from_excel(self):
+        # Laden der Leuchtendaten:
+        wb = oxl.load_workbook(get_path("excel_datei_einstellungen\\Leuchten.xlsx"))
+        wsh = wb.active
+
+        self.leuchten["Referenznummer"] = []
+        self.leuchten["Spannng"] = []
+        self.leuchten["Minimalstrom"] = []
+        self.leuchten["Maximalstrom"] = []
+
+        for row in wsh.iter_rows(min_row=2):
+            self.leuchten["Referenznummer"].append(row[0].value)
+            self.leuchten["Spannng"].append(row[1].value)
+            self.leuchten["Minimalstrom"].append(row[2].value)
+            self.leuchten["Maximalstrom"].append(row[3].value)
+
+        # Laden der Personalladen:
+        wb = oxl.load_workbook(get_path("excel_datei_einstellungen\\Personal.xlsx"))
+        wsh = wb.active
+
+        for row in wsh.iter_rows(min_row=2):
+            self.personal.append(row[0].value)
+
+
+    # _________________________________________________________________________________________________________________
     # Measurement
 
-    def init_measurement(self, dt):
+    def init_measurement(self):
         if self.tester_name == "" or self.meas_number == "" or self.number_light == "":
             self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)"
         else:
             self.switch_start = Switch(size_hint_y=None, height=35)
             self.buttons_label.add_widget(self.switch_start)
             self.curr_light = 1  # Start at 1
-            Clock.schedule_interval(self.start_measurement, 1./60.)
+            Clock.schedule_interval(lambda dt: self.start_measurement(), 1./60.)
             Clock.unschedule(self.init_measurement)
 
-    def start_measurement(self, dt):
+    def start_measurement(self):
         if self.instrument.connected:
             self.meas_message = "Gerät erkannt\nMessung kann gestartet werden"
         if self.instrument.connected and self.switch_start.active:
@@ -220,9 +267,9 @@ class MainWindow(BoxLayout):
     def init_channel(self):
         self.instrument.instr_on(0)
         self.instrument.gen_on()
-        Clock.schedule_once(self.get_data, 2)
+        Clock.schedule_once(lambda dt: self.get_data(), 2)
 
-    def get_data(self, dt):
+    def get_data(self):
         self.meas_message = "Bitte Anschließen der {}/{} Leuchte".format(self.curr_light, self.number_light)
     
     def end_measurement(self):
