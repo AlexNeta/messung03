@@ -11,3 +11,6 @@ fixed_cursor = size=30x30
 # Usefull:
 # Directory of kivy:
 # /usr/local/lib/python3.5/distr-packages/kivy/modules
+
+# Set python on startup:
+#

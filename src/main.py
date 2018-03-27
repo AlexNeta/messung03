@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from instrument import Instrument
-import xlsxwriter
+from src.instrument import Instrument
 from csv import reader, writer, QUOTE_MINIMAL
 
 from kivy.app import App
@@ -9,7 +8,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
-from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty, StringProperty, ListProperty
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty
 from kivy.clock import Clock
 from kivy.uix.listview import ListView
 from kivy.uix.switch import Switch
