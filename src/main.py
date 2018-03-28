@@ -230,7 +230,7 @@ class MainWindow(BoxLayout):
         for row in wsh.iter_rows(row_offset=1):
             if row[0].value is not None:
                 self.leuchten["Referenznummer"].append(row[0].value)
-                self.leuchten["Spannng"].append(row[1].value)
+                self.leuchten["Spannung"].append(row[1].value)
                 self.leuchten["Minimalstrom"].append(row[2].value)
                 self.leuchten["Maximalstrom"].append(row[3].value)
 
