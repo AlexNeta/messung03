@@ -447,6 +447,7 @@ class MainWindow(BoxLayout):
         defect = self.test_widgets["Fehler_spinner"].text
         # Nur forfahren falls ein Defekt ausgewählt wurde
         if defect != "Defekt auswählen":
+            print(defect, defect, defect, defect, defect, defect)
             self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
             self.results["Fehler"].append(defect)
             # Ändern des letzten Ergebnisses falls optisch die Messung nicht in Ordnung ist
@@ -459,8 +460,6 @@ class MainWindow(BoxLayout):
         self.end_measurement()
 
     def end_measurement(self):
-        self.instrument.instr_on(0)
-        self.instrument.instr_on(1)
         self.curr_light += 1
 
         liste = self.results["Leuchten_iO"]
@@ -469,8 +468,8 @@ class MainWindow(BoxLayout):
 
         if self.curr_light > self.number_light:
             # Kanäle ausschalten
-            self.instrument.instr_on(0)
-            self.instrument.instr_on(1)
+            self.instrument.instr_off(0)
+            self.instrument.instr_off(1)
             # Messung zu Ende neues Fesnster Öffnen
             self.tester_name = ""
             self.curr_light = 1
@@ -480,6 +479,8 @@ class MainWindow(BoxLayout):
             Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
             self.save_result()
         else:
+            self.instrument.instr_on(0)
+            self.instrument.instr_on(1)
             self.disconnect_light()
 
     # Speichern aller Daten
