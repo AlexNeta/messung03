@@ -419,6 +419,7 @@ class MainWindow(BoxLayout):
             self.instrument.instr_on(0)
         # Leuchte fehlerhaft:
 
+
     def end_measurement(self):
         self.instrument.gen_off()
         self.instrument.instr_off(0)
