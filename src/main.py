@@ -285,10 +285,6 @@ class MeasurementApp(App):
         w.build()
         return w
 
-
-if __name__ == "__main__":
-    MeasurementApp().run()
-
 """
             Switch:
                 size_hint_y: None
