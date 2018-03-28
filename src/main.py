@@ -460,7 +460,8 @@ class MainWindow(BoxLayout):
         self.instrument.instr_on(1)
         self.curr_light += 1
 
-        self.io_nio = sum(self.results["Stromwerte_iO"]), len(self.results["Stromwerte_iO"])
+        self.io_nio = sum(self.results["Stromwerte_iO"]), len(self.results["Stromwerte_iO"] -
+                                                              sum(self.results["Stromwerte_iO"]))
         print(self.results)
 
         if self.curr_light > self.number_light:
