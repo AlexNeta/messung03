@@ -436,6 +436,7 @@ class MainWindow(BoxLayout):
 
         self.test_widgets["Box_Error"] = BoxLayout(orientation="vertical")
         self.test_widgets["Box_Error"].add_widget(self.test_widgets["Fehler_spinner"])
+        self.test_widgets["Box_Error"].add_widget(Label())
         self.test_widgets["Box_Error"].add_widget(self.test_widgets["Auswahl"])
 
         self.buttons_label.add_widget(self.test_widgets["Box_Error"])
@@ -464,6 +465,7 @@ class MainWindow(BoxLayout):
         if self.curr_light > self.number_light:
             # Messung zu Ende neues Fesnster Öffnen
             self.tester_name = ""
+            self.curr_light = 1
             # Sequenz zur Erkennung ob Daten ausgefüllt wurden:
             Clock.schedule_interval(self.init_measurement, 1. / 10.)
             # Starten des ersten Fensters zum ausfüllen der Daten:
