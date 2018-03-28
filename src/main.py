@@ -434,7 +434,9 @@ class MainWindow(BoxLayout):
         self.test_widgets["Fehler_spinner"] = Spinner(size_hint_y=None, height=35,
                                                       text="Auswahl des Fehlers",
                                                       values=self.leuchten["optischeFehler"])
-        self.test_widgets["Auswahl"] = Button(size_hint_y=None, height=35, text="Defekt auswählen")
+        self.test_widgets["Auswahl"] = Button(size_hint_y=None, height=35,
+                                              text="Fehler bestätigen",
+                                              background_color=(1, 0, 0, 1))
         self.test_widgets["Auswahl"].bind(on_release=self.add_defect)
 
         self.test_widgets["Box_Error"] = BoxLayout(orientation="horizontal")
@@ -446,8 +448,7 @@ class MainWindow(BoxLayout):
     def add_defect(self, inst):
         defect = self.test_widgets["Fehler_spinner"].text
         # Nur forfahren falls ein Defekt ausgewählt wurde
-        if defect != "Defekt auswählen":
-            print(defect, defect, defect, defect, defect, defect)
+        if defect != "Auswahl des Fehlers":
             self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
             self.results["Fehler"].append(defect)
             # Ändern des letzten Ergebnisses falls optisch die Messung nicht in Ordnung ist
