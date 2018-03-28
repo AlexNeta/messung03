@@ -286,7 +286,6 @@ class MainWindow(BoxLayout):
         # Nach etwas Zeit kann erst mit der Messung begonnen werden
         Clock.schedule_once(lambda dt: self.get_data(), 2)
 
-
     def get_data(self):
         self.meas_message = "Bitte Anschließen der {}/{} Leuchte".format(self.curr_light, self.number_light)
     
