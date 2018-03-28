@@ -396,13 +396,14 @@ class MainWindow(BoxLayout):
         self.test_widgets["Box_optisch"].add_widget(box_ok)
         box_ok.add_widget(self.test_widgets["Leuchte_ok"])
         box_ok.add_widget(self.test_widgets["Leuchte_fehlerhaft"])
-        self.test_widgets["Box_optisch"].add_widget(Label(text="Strom_umstellen:"))
         self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen"])
 
         self.buttons_label.add_widget(self.test_widgets["Box_optisch"])
+        self.meas_message = "Mit dem Schalter zwischen den LEDs wechseln"
 
     def optical_testing_init(self):
         self.add_buttons_optical_test()
+        self.instrument.instr_off(1)
 
     def switch_light(self, inst, value):
         # Strom umstellen falls Switch gedrückt wird:
@@ -440,9 +441,11 @@ class MainWindow(BoxLayout):
         self.end_measurement()
 
     def end_measurement(self):
-        self.instrument.instr_off(0)
-        self.instrument.instr_off(1)
+        self.instrument.instr_on(0)
+        self.instrument.instr_on(1)
         self.curr_light += 1
+
+        print(self.results)
 
         if self.curr_light > self.number_light:
             # Messung zu Ende neues Fesnster Öffnen
