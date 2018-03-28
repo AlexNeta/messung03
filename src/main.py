@@ -14,7 +14,6 @@ from kivy.properties import NumericProperty, ObjectProperty, StringProperty, Dic
 from kivy.clock import Clock
 from kivy.uix.listview import ListView
 from kivy.uix.switch import Switch
-from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.label import Label
@@ -261,13 +260,6 @@ class MainWindow(BoxLayout):
             if row[0].value is not None:
                 self.leuchten["optischeFehler"].append(row[0].value)
 
-        # Hinzufügen der Ergebnisse:
-        self.results["Stromwerte"] = []
-        self.results["Stromwerte_iO"] = []
-        self.results["Fehler"] = []
-
-        print(self.leuchten)
-
     # _________________________________________________________________________________________________________________
     # Messung
 
@@ -278,6 +270,10 @@ class MainWindow(BoxLayout):
             self.switch_start = Switch(size_hint_y=None, height=35)
             self.buttons_label.add_widget(self.switch_start)
             self.curr_light = 1  # Start at 1
+            # Hinzufügen der Ergebnisse:
+            self.results["Stromwerte"] = []
+            self.results["Stromwerte_iO"] = []
+            self.results["Fehler"] = []
             Clock.schedule_interval(self.start_measurement, 1./60.)
             Clock.unschedule(self.init_measurement)
 
@@ -313,19 +309,30 @@ class MainWindow(BoxLayout):
         Clock.schedule_once(lambda dt: self.connect_light(), 2)
 
     # Anschließen der Leuchten:
-
     def connect_light(self):
         self.meas_message = "Bitte Anschließen der {}/{} Leuchte".format(self.curr_light, self.number_light)
-        Clock.schedule_interval(self.listen_channel, 0.4)
+        Clock.schedule_interval(self.listen_channel_connected, 0.4)
 
-    def listen_channel(self, dt):
+    def disconnect_light(self):
+        self.meas_message = "Bitte diese Leuchte entfernen"
+        Clock.schedule_interval(self.listen_channel_disconnected, 0.4)
+
+    def listen_channel_disconnected(self, dt):
+        volt1, curr1 = self.instrument.ch_measure(0)
+        volt2, curr2 = self.instrument.ch_measure(1)
+        print(curr2, curr1)
+        if curr1 < 0.001 and curr2 < 0.001:
+            Clock.schedule_once(lambda dt: self.connect_light(), 1)
+            Clock.unschedule(self.listen_channel_disconnected)
+
+    def listen_channel_connected(self, dt):
         volt1, curr1 = self.instrument.ch_measure(0)
         volt2, curr2 = self.instrument.ch_measure(1)
         print(curr2, curr1)
         if curr1 > 0.001 and curr2 > 0.001:
             self.meas_message = "Bitte warten bis sich der Strom stabilisiert hat."
             Clock.schedule_once(lambda dt: self.measure_light(), 3)
-            Clock.unschedule(self.listen_channel)
+            Clock.unschedule(self.listen_channel_connected)
 
     def measure_light(self):
         nr = self.get_testing_light_nr()
@@ -346,67 +353,108 @@ class MainWindow(BoxLayout):
 
     def add_buttons_measurement(self):
         # Hinzufügen der Buttons um nochmal zu messen oder fortzufahren:
-        self.test_widgets["Messung_fortfahren"] = ToggleButton(size_hint_y=None, height=35,
-                                                               text="Messung trotzdem forfahren")
+        self.test_widgets["Messung_fortfahren"] = Button(size_hint_y=None, height=35, text="Messung trotzdem forfahren")
         self.test_widgets["Messung_fortfahren"].bind(on_release=self.continue_meas)
-        self.test_widgets["Messung_wiederholen"] = ToggleButton(size_hint_y=None, height=35,
-                                                                text="Messung wiederholen")
+        self.test_widgets["Messung_wiederholen"] = Button(size_hint_y=None, height=35, text="Messung wiederholen")
         self.test_widgets["Messung_wiederholen"].bind(on_release=self.remeasure)
-
-        box_buttons = BoxLayout(orientation="horizontal")
-        box_buttons.add_widget(self.test_widgets["Messung_wiederholen"])
-        box_buttons.add_widget(self.test_widgets["Messung_fortfahren"])
-        self.buttons_label.add_widget(box_buttons)
+        self.test_widgets["Box_Messung"] = BoxLayout(orientation="horizontal")
+        self.test_widgets["Box_Messung"].add_widget(self.test_widgets["Messung_wiederholen"])
+        self.test_widgets["Box_Messung"].add_widget(self.test_widgets["Messung_fortfahren"])
+        self.buttons_label.add_widget(self.test_widgets["Box_Messung"])
         self.meas_message = "[color=ff0000]Messwerte liegen nicht im Bereich![/color]"
 
     # Messung wiederholen
     def remeasure(self, inst):
         self.meas_message = "Messung wird wiederholt!"
+        # Buttons werden entfernt:
+        self.buttons_label.remove_widget(self.test_widgets["Box_Messung"])
         # Altes Messergebnis entfernen
         del self.results["Stromwerte"][-1]
         # Messvorgang wieder beginnen
-        Clock.schedule_interval(self.listen_channel, 0.4)
+        Clock.schedule_interval(self.listen_channel_connected, 0.4)
 
     # Messung trotzdem forfahren
     def continue_meas(self, inst):
+        # Buttons werden entfernt:
+        self.buttons_label.remove_widget(self.test_widgets["Box_Messung"])
+        # Fortfahren
         self.results["Stromwerte_iO"].append(False)
         self.optical_testing_init()
 
-    def add_buttons_optical_test(self):
-        self.test_widgets["Leuchte_ok"] = ToggleButton(size_hint_y=None, height=35, text="Leuchte ok")
-        self.test_widgets["Leuchte_fehlerhaft"] = ToggleButton(size_hint_y=None, height=35,
-                                                                   text="Leuchte fehlerhaft")
-        self.test_widgets["Strom_umstellen"] = Switch(size_hint_y=None, height=35)
+    # Optisches testen
 
-        box_buttons = BoxLayout(orientation="vertical")
+    def add_buttons_optical_test(self):
+        self.test_widgets["Leuchte_ok"] = Button(size_hint_y=None, height=35, text="Leuchte ok")
+        self.test_widgets["Leuchte_ok"].bind(on_release=self.light_works)
+        self.test_widgets["Leuchte_fehlerhaft"] = Button(size_hint_y=None, height=35, text="Leuchte fehlerhaft")
+        self.test_widgets["Leuchte_fehlerhaft"].bind(on_release=self.light_defect)
+        self.test_widgets["Strom_umstellen"] = Switch(size_hint_y=None, height=35)
+        self.test_widgets["Strom_umstellen"].bind(active=self.switch_light)
+
+        self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
         box_ok = BoxLayout(orientation="horizontal")
-        box_buttons.add_widget(box_ok)
+        self.test_widgets["Box_optisch"].add_widget(box_ok)
         box_ok.add_widget(self.test_widgets["Leuchte_ok"])
         box_ok.add_widget(self.test_widgets["Leuchte_fehlerhaft"])
-        box_buttons.add_widget(Label(text="Strom_umstellen:"))
-        box_buttons.add_widget(self.test_widgets["Strom_umstellen"])
+        self.test_widgets["Box_optisch"].add_widget(Label(text="Strom_umstellen:"))
+        self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen"])
 
-        self.buttons_label.add_widget(box_buttons)
+        self.buttons_label.add_widget(self.test_widgets["Box_optisch"])
 
     def optical_testing_init(self):
         self.add_buttons_optical_test()
-        Clock.schedule_interval(self.optical_testing, 1./60.)
 
-    def optical_testing(self, dt):
+    def switch_light(self, inst, value):
         # Strom umstellen falls Switch gedrückt wird:
-        if self.test_widgets["Strom_umstellen"].active:
+        if value:
             self.instrument.instr_off(0)
             self.instrument.instr_on(1)
         else:
             self.instrument.instr_off(1)
             self.instrument.instr_on(0)
-        # Leuchte fehlerhaft:
 
+    def light_defect(self, inst):
+        self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
+        # Falls Leuchte defekt
+        # Hinzufügen eines Spinners zur Auswahl des Defekts
+        self.test_widgets["Fehler_spinner"] = Spinner(text="Auswahl des Fehlers",
+                                                      values=self.leuchten["optischeFehler"])
+
+        self.test_widgets["Auswahl"] = Button(size_hint_y=None, height=35, text="Defekt auswählen")
+        self.test_widgets["Auswahl"].bind(on_release=self.add_defect)
+
+        self.test_widgets["Box_Error"] = BoxLayout(orientation="vertical")
+        self.test_widgets["Box_Error"].add_widget(self.test_widgets["Fehler_spinner"])
+        self.test_widgets["Box_Error"].add_widget(self.test_widgets["Auswahl"])
+
+        self.buttons_label.add_widget(self.test_widgets["Box_Error"])
+
+    def add_defect(self, inst):
+        self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
+        self.results["Fehler"].append(self.test_widgets["Fehler_spinner"].text)
+        self.end_measurement()
+
+    def light_works(self, inst):
+        self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
+        self.results["Fehler"].append("keine")
+        self.end_measurement()
 
     def end_measurement(self):
-        self.instrument.gen_off()
         self.instrument.instr_off(0)
         self.instrument.instr_off(1)
+        self.curr_light += 1
+
+        if self.curr_light > self.number_light:
+            # Messung zu Ende neues Fesnster Öffnen
+            self.tester_name = ""
+            # Sequenz zur Erkennung ob Daten ausgefüllt wurden:
+            Clock.schedule_interval(self.init_measurement, 1. / 10.)
+            # Starten des ersten Fensters zum ausfüllen der Daten:
+            Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
+            # TODO Speichern
+        else:
+            self.disconnect_light()
+
 
 class MeasurementApp(App):
     icon = './icons/icon.png'
