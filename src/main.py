@@ -169,6 +169,7 @@ class MainWindow(BoxLayout):
     test_widgets = DictProperty()
     # Messages:
     meas_message = StringProperty()
+    meas_in_range = ObjectProperty()
     # Results:
     results = DictProperty()
     io_nio = ListProperty([0, 0])
@@ -277,7 +278,7 @@ class MainWindow(BoxLayout):
             self.curr_light = 1  # Start at 1
             # Hinzufügen der Ergebnisse:
             self.results["Stromwerte"] = []
-            self.results["Stromwerte_iO"] = []
+            self.results["Leuchten_iO"] = []
             self.results["Fehler"] = []
             Clock.schedule_interval(self.start_measurement, 1./60.)
             Clock.unschedule(self.init_measurement)
@@ -349,10 +350,12 @@ class MainWindow(BoxLayout):
             self.meas_message = "[color=#268d0d]Messwerte in Ordnung[/color]"
 
             # Messung liegt im Bereich
-            self.results["Stromwerte_iO"].append(True)
+            self.results["Leuchten_iO"].append(True)
+            self.meas_in_range.found()
             self.optical_testing_init()
         else:
             # Messung liegt nicht im Bereich
+            self.meas_in_range.not_found()
             self.add_buttons_measurement()
 
     def add_buttons_measurement(self):
@@ -382,7 +385,7 @@ class MainWindow(BoxLayout):
         # Buttons werden entfernt:
         self.buttons_label.remove_widget(self.test_widgets["Box_Messung"])
         # Fortfahren
-        self.results["Stromwerte_iO"].append(False)
+        self.results["Leuchten_iO"].append(False)
         self.optical_testing_init()
 
     # Optisches testen
@@ -429,15 +432,14 @@ class MainWindow(BoxLayout):
         self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
         # Falls Leuchte defekt
         # Hinzufügen eines Spinners zur Auswahl des Defekts
-        self.test_widgets["Fehler_spinner"] = Spinner(text="Auswahl des Fehlers",
+        self.test_widgets["Fehler_spinner"] = Spinner(size_hint_y=None, height=35,
+                                                      text="Auswahl des Fehlers",
                                                       values=self.leuchten["optischeFehler"])
-
         self.test_widgets["Auswahl"] = Button(size_hint_y=None, height=35, text="Defekt auswählen")
         self.test_widgets["Auswahl"].bind(on_release=self.add_defect)
 
         self.test_widgets["Box_Error"] = BoxLayout(orientation="horizontal")
         self.test_widgets["Box_Error"].add_widget(self.test_widgets["Fehler_spinner"])
-        self.test_widgets["Box_Error"].add_widget(Label())
         self.test_widgets["Box_Error"].add_widget(self.test_widgets["Auswahl"])
 
         self.buttons_label.add_widget(self.test_widgets["Box_Error"])
@@ -448,6 +450,8 @@ class MainWindow(BoxLayout):
         if defect != "Defekt auswählen":
             self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
             self.results["Fehler"].append(defect)
+            # Ändern des letzten Ergebnisses falls optisch die Messung nicht in Ordnung ist
+            self.results["Leuchten_iO"][-1] = False
             self.end_measurement()
 
     def light_works(self, inst):
@@ -460,11 +464,14 @@ class MainWindow(BoxLayout):
         self.instrument.instr_on(1)
         self.curr_light += 1
 
-        liste = self.results["Stromwerte_iO"]
+        liste = self.results["Leuchten_iO"]
         self.io_nio = sum(liste), len(liste) - sum(liste)
         print(self.results)
 
         if self.curr_light > self.number_light:
+            # Kanäle ausschalten
+            self.instrument.instr_on(0)
+            self.instrument.instr_on(1)
             # Messung zu Ende neues Fesnster Öffnen
             self.tester_name = ""
             self.curr_light = 1
