@@ -401,8 +401,8 @@ class MainWindow(BoxLayout):
         self.test_widgets["Box_optisch"].add_widget(box_ok)
         box_ok.add_widget(self.test_widgets["Leuchte_ok"])
         box_ok.add_widget(self.test_widgets["Leuchte_fehlerhaft"])
-        self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen"])
-
+        self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen_LED1"])
+        self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen_LED2"])
         self.buttons_label.add_widget(self.test_widgets["Box_optisch"])
         self.meas_message = "Mit dem Schaltern die LEDs ein-/ausschalten"
 
