@@ -333,8 +333,8 @@ class MainWindow(BoxLayout):
         curr = self.instrument.ch_measure(ch_nr=0)[1], self.instrument.ch_measure(ch_nr=1)[1]
         self.results["Stromwerte"].append(curr)
         # Anfragen ob im Bereich
-        if self.leuchten["LED1Maximalstrom"] >= curr[0] >= self.leuchten["LED1Minimalstrom"] \
-                and self.leuchten["LED2Maximalstrom"] >= curr[1] >= self.leuchten["LED2Minimalstrom"]:
+        if self.leuchten["LED1Maximalstrom"][nr] >= curr[0] >= self.leuchten["LED1Minimalstrom"][nr] \
+                and self.leuchten["LED2Maximalstrom"][nr] >= curr[1] >= self.leuchten["LED2Minimalstrom"][nr]:
             self.meas_message = "[color=#268d0d]Messwerte in Ordnung[/color]"
 
             # Messung liegt im Bereich
