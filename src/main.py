@@ -190,23 +190,6 @@ class MainWindow(BoxLayout):
         # Starten des ersten Fensters zum ausfüllen der Daten:
         Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
 
-
-        # Test
-        self.test_widgets["Messung_fortfahren"] = Button(size_hint_y=None, height=35,
-                                                         text="Messung trotzdem forfahren")
-        self.test_widgets["Messung_wiederholen"] = Button(size_hint_y=None, height=35,
-                                                          text="Messung wiederholen")
-        self.test_widgets["Messung_fortfahren"].bind(on_release=self.h)
-        box_buttons = BoxLayout(orientation="horizontal")
-        box_buttons.add_widget(self.test_widgets["Messung_wiederholen"])
-        box_buttons.add_widget(self.test_widgets["Messung_fortfahren"])
-        self.buttons_label.add_widget(box_buttons)
-        self.meas_message = "[color=ff0000]Messwerte liegen nicht im Bereich![/color]"
-
-    def h(self, inst):
-        print(self.leuchten)
-
-
     def get_measurement_data(self):
         print("Laden der Einstellungen aus:")
         print(realpath("src/settings.csv"))
