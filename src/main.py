@@ -435,7 +435,7 @@ class MainWindow(BoxLayout):
         self.test_widgets["Auswahl"] = Button(size_hint_y=None, height=35, text="Defekt auswählen")
         self.test_widgets["Auswahl"].bind(on_release=self.add_defect)
 
-        self.test_widgets["Box_Error"] = BoxLayout(orientation="vertical")
+        self.test_widgets["Box_Error"] = BoxLayout(orientation="horizontal")
         self.test_widgets["Box_Error"].add_widget(self.test_widgets["Fehler_spinner"])
         self.test_widgets["Box_Error"].add_widget(Label())
         self.test_widgets["Box_Error"].add_widget(self.test_widgets["Auswahl"])
@@ -460,8 +460,8 @@ class MainWindow(BoxLayout):
         self.instrument.instr_on(1)
         self.curr_light += 1
 
-        self.io_nio = sum(self.results["Stromwerte_iO"]), len(self.results["Stromwerte_iO"] -
-                                                              sum(self.results["Stromwerte_iO"]))
+        liste = self.results["Stromwerte_iO"]
+        self.io_nio = sum(liste), len(liste) - sum(liste)
         print(self.results)
 
         if self.curr_light > self.number_light:
