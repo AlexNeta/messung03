@@ -475,6 +475,7 @@ class MainWindow(BoxLayout):
     # Speichern aller Daten
     def save_result(self):
         # TODO Speichern
+
         pass
 
 
