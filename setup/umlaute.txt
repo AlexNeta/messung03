@@ -1,0 +1,11 @@
+Um Umlaute in Kivy-Dateien schreiben zu können:
+
+# In der Python Console eingeben:
+hex(ord('ä'))
+
+# ä
+\u00e4
+# ü
+\u00fc
+# ß
+\u00df

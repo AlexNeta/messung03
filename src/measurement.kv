@@ -1,5 +1,6 @@
 #: import ListAdapter kivy.adapters.listadapter.ListAdapter
 #: import ListItemButton kivy.uix.listview.ListItemButton
+#:import Factory kivy.factory.Factory
 
 <Loading@Image>:
     source: "icons/b_pxl.png"
@@ -15,6 +16,12 @@
         ListAdapter(data=[""], cls=ListItemButton)
 
 <SmallLabel@Label>:
+    canvas:
+        Color:
+            rgba: 1, .7, .3, 1
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
     size_hint_y: None
     height: 35
 
@@ -23,6 +30,14 @@
     height: 35
     multiline: False
     write_tab: False
+
+<MySpinnerOption@SpinnerOption>:
+    background_color: 0.1, .7, 0, 1
+
+<MySpinner@Spinner>:
+    height: 35
+    size_hint_y: None
+    option_cls: Factory.get("MySpinnerOption")
 
 
 <Set@Popup>:
@@ -71,8 +86,9 @@
 
 <New@Popup>:
     auto_dismiss: False
+    name_spinner: name_spinner
+    light_spinner: light_spinner
     title: "Neue Messung"
-    # TODO UPDATE!
     BoxLayout:
         spacing: 10
         orientation: "vertical"
@@ -90,15 +106,20 @@
                 SmallLabel:
                     text: "Pr\u00fcfnummer:"
                 SmallLabel:
+                    text: "Leuchte:"
+                SmallLabel:
                     text: "Anzahl an Leuchten:"
             BoxLayout:
                 orientation: "vertical"
-                SmallInput:
-                    id: name
-                    text: root.tester_name
+                MySpinner:
+                    text: "Namen ausw\u00e4hlen"
+                    id: name_spinner
                 SmallInput:
                     id: meas_number
                     text: root.meas_number
+                MySpinner:
+                    text: "Leuchte ausw\u00e4hlen"
+                    id: light_spinner
                 SmallInput:
                     id: number_light
                     input_filter: "int"
@@ -114,7 +135,7 @@
                 size_hint: None, None
                 size: 100, 40
                 text: "Best\u00e4tingen"
-                on_release: root.make_new_file(name.text, meas_number.text, number_light.text)
+                on_release: root.make_new_file(name_spinner.text, meas_number.text, light_spinner.text, number_light.text)
             Button:
                 size_hint: None, None
                 size: 100, 40
@@ -244,6 +265,21 @@ MainWindow:
     spacing: 1
     ToolBar:
         id: toolbar
+
+    BoxLayout:
+        orientation: "horizontal"
+        BoxLayout:
+            orientation: "vertical"
+            SmallLabel:
+                text: "Name: {}".format(root.tester_name)
+            SmallLabel:
+                text: "Auftragsbezeichung: {}".format(root.meas_number)
+            SmallLabel:
+                text: "Ausgew\u00e4hhlte Leuchte: {}".format(root.testing_light)
+            SmallLabel:
+                text: "Anzahl an Leuchten: {}".format(root.number_light)
+            Label:
+        Label:
 
     BoxLayout:
         orientation: "horizontal"

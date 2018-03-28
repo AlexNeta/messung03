@@ -18,10 +18,6 @@ from kivy.uix.switch import Switch
 # Toolbar
 
 
-class Exit(Popup):
-    pass
-
-
 class About(Popup):
     pass
 
@@ -29,20 +25,28 @@ class About(Popup):
 class New(Popup):
     toolbar = ObjectProperty()
 
-    tester_name = StringProperty()
+    # Prüfer:
+    name_spinner = ObjectProperty()
+    # Auftragsbezeichung:
     meas_number = StringProperty()
+    # Leuchte:
+    light_spinner = ObjectProperty()
+    # Anzahl:
     number_light = StringProperty()
 
     def build(self, toolbar_parent):
         self.toolbar = toolbar_parent
-        self.tester_name = self.toolbar.parent.tester_name
-        self.meas_number = self.toolbar.parent.meas_number
-        self.number_light = self.toolbar.parent.number_light
 
-    def make_new_file(self, name, meas_number, number_light):
+        self.name_spinner.values = self.toolbar.parent.personal
+        self.meas_number = self.toolbar.parent.meas_number
+        self.light_spinner.values = self.toolbar.parent.leuchten["Referenznummer"]
+        self.number_light = str(self.toolbar.parent.number_light)
+
+    def make_new_file(self, name, meas_number, testing_light, number_light):
         self.toolbar.parent.tester_name = name
         self.toolbar.parent.meas_number = meas_number
-        self.toolbar.parent.number_light = number_light
+        self.toolbar.parent.testing_light = testing_light
+        self.toolbar.parent.number_light = int(number_light)
         self.dismiss()
 
 
@@ -135,10 +139,6 @@ class ToolBar(GridLayout):
     def about():
         About().open()
 
-    @staticmethod
-    def exit():
-        Exit().open()
-
 
 # _____________________________________________________________________________________________________________________
 # Main
@@ -155,10 +155,11 @@ class MainWindow(BoxLayout):
     # Instrument:
     instrument = ObjectProperty()
     # Setup:
-    tester_name = StringProperty()  # Name des Testers
-    meas_number = StringProperty()  # Name der Messung
-    number_light = StringProperty()  # Anzahl Leuchten (int)
-    curr_light = NumericProperty()  # Aktuelle Leuchte (int)
+    tester_name = StringProperty()      # Name des Testers
+    meas_number = StringProperty()      # Name der Messung
+    testing_light = StringProperty()   # Ausgewählte Leuchte aus Excel-Datei
+    number_light = NumericProperty()    # Anzahl Leuchten (int)
+    curr_light = NumericProperty()      # Aktuelle Leuchte (int)
     # Measurement-Switch:
     buttons_label = ObjectProperty()
     switch_start = ObjectProperty()
@@ -178,7 +179,7 @@ class MainWindow(BoxLayout):
         # Laden der Excel-Dateien:
         self.load_from_excel()
         # Sequenz zur Erkennung ob Daten ausgefüllt wurden:
-        Clock.schedule_interval(lambda dt: self.init_measurement(), 1. / 10.)
+        Clock.schedule_interval(self.init_measurement, 1. / 10.)
         # Starten des ersten Fensters zum ausfüllen der Daten:
         Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
 
@@ -192,7 +193,7 @@ class MainWindow(BoxLayout):
             print("Laden war nicht möglich!")
             pass
     # _________________________________________________________________________________________________________________
-    # Settings
+    # Einstellungen
 
     def load_settings(self):
         save_file = []
@@ -214,7 +215,7 @@ class MainWindow(BoxLayout):
                 r.writerow(x)
 
     # _________________________________________________________________________________________________________________
-    # Loading from Excel-Files
+    # Laden aus den Excel-Dateien
 
     def load_from_excel(self):
         # Laden der Leuchtendaten:
@@ -241,37 +242,48 @@ class MainWindow(BoxLayout):
             if row[0].value is not None:
                 self.personal.append(row[0].value)
 
-        print(self.leuchten)
-        print(self.personal)
-
-
     # _________________________________________________________________________________________________________________
-    # Measurement
+    # Messung
 
-    def init_measurement(self):
+    def init_measurement(self, dt):
         if self.tester_name == "" or self.meas_number == "" or self.number_light == "":
-            self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)"
+            self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)."
         else:
             self.switch_start = Switch(size_hint_y=None, height=35)
             self.buttons_label.add_widget(self.switch_start)
             self.curr_light = 1  # Start at 1
-            Clock.schedule_interval(lambda dt: self.start_measurement(), 1./60.)
+            Clock.schedule_interval(self.start_measurement, 1./60.)
             Clock.unschedule(self.init_measurement)
 
-    def start_measurement(self):
+    def start_measurement(self, dt):
         if self.instrument.connected:
-            self.meas_message = "Gerät erkannt\nMessung kann gestartet werden"
+            self.meas_message = "Gerät erkannt.\n" \
+                                "Messung kann gestartet werden."
         if self.instrument.connected and self.switch_start.active:
-            self.meas_message = "Messung wurde gestartet"
+            self.meas_message = "Messung wurde gestartet."
             self.buttons_label.remove_widget(self.switch_start)
             self.init_channel()
             Clock.unschedule(self.start_measurement)
         elif not self.instrument.connected:
-            self.meas_message = "Kein Gerät eingerichtet\n(Oben links einstellen)"
+            self.meas_message = "Kein Gerät eingerichtet\n(Oben links einstellen)."
+
+    def get_testing_light_nr(self):
+        return [i for i, x in enumerate(self.leuchten["Referenznummer"]) if x == self.testing_light][0]
 
     def init_channel(self):
+        # Nummer der ausgewählten Leuchte
+        nr = self.get_testing_light_nr()
+        # Spannung und Strom
+        volt = self.leuchten["Spannung"][nr]
+        curr = "MAX"
+        # Kanäle einstellen
+        self.instrument.ch_set(ch_nr=0, volt=volt, curr=curr)
+        self.instrument.ch_set(ch_nr=1, volt=volt, curr=curr)
+        # Kanäle einschalten
+        self.instrument.instr_on(0)
         self.instrument.instr_on(0)
         self.instrument.gen_on()
+        # Nach etwas Zeit kann erst mit der Messung begonnen werden
         Clock.schedule_once(lambda dt: self.get_data(), 2)
 
     def get_data(self):
@@ -291,11 +303,6 @@ class MeasurementApp(App):
         return w
 
 """
-            Switch:
-                size_hint_y: None
-                height: 35
-                id: switch_start
-                on_active: root.start_measurement(self.active)
          Label:
             text: "[color=ff0000]ALL current Measurements will be deleted![/color]"
             markup: True
