@@ -408,6 +408,7 @@ class MainWindow(BoxLayout):
 
     def optical_testing_init(self):
         self.add_buttons_optical_test()
+        self.instrument.instr_off(0)
         self.instrument.instr_off(1)
 
     def switch_light1(self, inst, value):
