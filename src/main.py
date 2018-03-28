@@ -326,7 +326,6 @@ class MainWindow(BoxLayout):
     def listen_channel_disconnected(self, dt):
         volt1, curr1 = self.instrument.ch_measure(0)
         volt2, curr2 = self.instrument.ch_measure(1)
-        print(curr2, curr1)
         if curr1 < 0.001 and curr2 < 0.001:
             Clock.schedule_once(lambda dt: self.connect_light(), 1)
             Clock.unschedule(self.listen_channel_disconnected)
