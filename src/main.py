@@ -459,9 +459,14 @@ class MainWindow(BoxLayout):
             Clock.schedule_interval(self.init_measurement, 1. / 10.)
             # Starten des ersten Fensters zum ausfüllen der Daten:
             Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
-            # TODO Speichern
+            self.save_result()
         else:
             self.disconnect_light()
+
+    # Speichern aller Daten
+    def save_result(self):
+        # TODO Speichern
+        pass
 
 
 class MeasurementApp(App):
