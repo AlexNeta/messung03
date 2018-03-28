@@ -268,7 +268,7 @@ class MainWindow(BoxLayout):
         if self.tester_name == "" or \
                 self.meas_number == "" or \
                 self.number_light == "" or \
-                self.testing_light != "Leuchte auswählen":
+                self.testing_light == "Leuchte auswählen":
             self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)."
         else:
             self.switch_start = Switch(size_hint_y=None, height=35)
