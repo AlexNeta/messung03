@@ -2,7 +2,7 @@
 
 from src.instrument import Instrument
 from csv import reader, writer, QUOTE_MINIMAL
-from os.path import _getfullpathname as get_path
+from os.path import realpath
 import openpyxl as oxl
 
 from kivy.app import App
@@ -184,7 +184,7 @@ class MainWindow(BoxLayout):
 
     def get_measurement_data(self):
         print("Laden der Einstellungen aus:")
-        print(get_path("src\\settings.csv"))
+        print(realpath("src/settings.csv"))
         try:
             self.load_settings()
             print("Laden erfolgreich!")
@@ -196,7 +196,7 @@ class MainWindow(BoxLayout):
 
     def load_settings(self):
         save_file = []
-        with open(get_path("src\\settings.csv"), "r", newline="") as csv_file:
+        with open(realpath("src/settings.csv"), "r", newline="") as csv_file:
             r = reader(csv_file, delimiter=" ", quotechar="|")
             for x in r:
                 save_file.append("".join(x))
@@ -208,7 +208,7 @@ class MainWindow(BoxLayout):
         # Save data
         save_file = self.save_dire, self.save_name, self.instr_name
 
-        with open(get_path("src\\settings.csv"), "w", newline="") as csv_file:
+        with open(realpath("src/settings.csv"), "w", newline="") as csv_file:
             r = writer(csv_file, delimiter=" ", quotechar="|", quoting=QUOTE_MINIMAL)
             for x in save_file:
                 r.writerow(x)
@@ -218,7 +218,7 @@ class MainWindow(BoxLayout):
 
     def load_from_excel(self):
         # Laden der Leuchtendaten:
-        wb = oxl.load_workbook(get_path("excel_datei_einstellungen\\Leuchten.xlsx"))
+        wb = oxl.load_workbook(realpath("excel_datei_einstellungen/Leuchten.xlsx"))
         wsh = wb.active
 
         self.leuchten["Referenznummer"] = []
@@ -233,11 +233,14 @@ class MainWindow(BoxLayout):
             self.leuchten["Maximalstrom"].append(row[3].value)
 
         # Laden der Personalladen:
-        wb = oxl.load_workbook(get_path("excel_datei_einstellungen\\Personal.xlsx"))
+        wb = oxl.load_workbook(realpath("excel_datei_einstellungen/Personal.xlsx"))
         wsh = wb.active
 
         for row in wsh.iter_rows(min_row=2):
             self.personal.append(row[0].value)
+
+        print(self.leuchten)
+        print(self.personal)
 
 
     # _________________________________________________________________________________________________________________
