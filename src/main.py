@@ -14,6 +14,10 @@ from kivy.properties import NumericProperty, ObjectProperty, StringProperty, Dic
 from kivy.clock import Clock
 from kivy.uix.listview import ListView
 from kivy.uix.switch import Switch
+from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.button import Button
+from kivy.uix.spinner import Spinner
+from kivy.uix.label import Label
 # _____________________________________________________________________________________________________________________
 # Toolbar
 
@@ -163,8 +167,11 @@ class MainWindow(BoxLayout):
     # Measurement-Switch:
     buttons_label = ObjectProperty()
     switch_start = ObjectProperty()
+    test_widgets = DictProperty()
     # Messages:
     meas_message = StringProperty()
+    # Results:
+    results = DictProperty()
 
     def build(self):
         # Startvorgang des Programms:
@@ -182,6 +189,23 @@ class MainWindow(BoxLayout):
         Clock.schedule_interval(self.init_measurement, 1. / 10.)
         # Starten des ersten Fensters zum ausfüllen der Daten:
         Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
+
+
+        # Test
+        self.test_widgets["Messung_fortfahren"] = Button(size_hint_y=None, height=35,
+                                                         text="Messung trotzdem forfahren")
+        self.test_widgets["Messung_wiederholen"] = Button(size_hint_y=None, height=35,
+                                                          text="Messung wiederholen")
+        self.test_widgets["Messung_fortfahren"].bind(on_release=self.h)
+        box_buttons = BoxLayout(orientation="horizontal")
+        box_buttons.add_widget(self.test_widgets["Messung_wiederholen"])
+        box_buttons.add_widget(self.test_widgets["Messung_fortfahren"])
+        self.buttons_label.add_widget(box_buttons)
+        self.meas_message = "[color=ff0000]Messwerte liegen nicht im Bereich![/color]"
+
+    def h(self, inst):
+        print(self.leuchten)
+
 
     def get_measurement_data(self):
         print("Laden der Einstellungen aus:")
@@ -221,18 +245,21 @@ class MainWindow(BoxLayout):
         # Laden der Leuchtendaten:
         wb = oxl.load_workbook(realpath("excel_datei_einstellungen/Leuchten.xlsx"))
         wsh = wb.active
-
         self.leuchten["Referenznummer"] = []
         self.leuchten["Spannung"] = []
-        self.leuchten["Minimalstrom"] = []
-        self.leuchten["Maximalstrom"] = []
+        self.leuchten["LED1Minimalstrom"] = []
+        self.leuchten["LED1Maximalstrom"] = []
+        self.leuchten["LED2Minimalstrom"] = []
+        self.leuchten["LED2Maximalstrom"] = []
 
         for row in wsh.iter_rows(row_offset=1):
             if row[0].value is not None:
                 self.leuchten["Referenznummer"].append(row[0].value)
                 self.leuchten["Spannung"].append(row[1].value)
-                self.leuchten["Minimalstrom"].append(row[2].value)
-                self.leuchten["Maximalstrom"].append(row[3].value)
+                self.leuchten["LED1Minimalstrom"].append(row[2].value)
+                self.leuchten["LED1Maximalstrom"].append(row[3].value)
+                self.leuchten["LED2Minimalstrom"].append(row[4].value)
+                self.leuchten["LED2Maximalstrom"].append(row[5].value)
 
         # Laden der Personalladen:
         wb = oxl.load_workbook(realpath("excel_datei_einstellungen/Personal.xlsx"))
@@ -241,6 +268,22 @@ class MainWindow(BoxLayout):
         for row in wsh.iter_rows(row_offset=1):
             if row[0].value is not None:
                 self.personal.append(row[0].value)
+
+        # Laden der möglichen optischen Fehler:
+        wb = oxl.load_workbook(realpath("excel_datei_einstellungen/optische_Fehler.xlsx"))
+        wsh = wb.active
+        self.leuchten["optischeFehler"] = []
+
+        for row in wsh.iter_rows(row_offset=1):
+            if row[0].value is not None:
+                self.leuchten["optischeFehler"].append(row[0].value)
+
+        # Hinzufügen der Ergebnisse:
+        self.results["Stromwerte"] = []
+        self.results["Stromwerte_iO"] = []
+        self.results["Fehler"] = []
+
+        print(self.leuchten)
 
     # _________________________________________________________________________________________________________________
     # Messung
@@ -281,18 +324,105 @@ class MainWindow(BoxLayout):
         self.instrument.ch_set(ch_nr=1, volt=volt, curr=curr)
         # Kanäle einschalten
         self.instrument.instr_on(0)
-        self.instrument.instr_on(0)
+        self.instrument.instr_on(1)
         self.instrument.gen_on()
         # Nach etwas Zeit kann erst mit der Messung begonnen werden
-        Clock.schedule_once(lambda dt: self.get_data(), 2)
+        Clock.schedule_once(lambda dt: self.connect_light(), 2)
 
-    def get_data(self):
+    # Anschließen der Leuchten:
+
+    def connect_light(self):
         self.meas_message = "Bitte Anschließen der {}/{} Leuchte".format(self.curr_light, self.number_light)
-    
-    def end_measurement(self):
-        self.instrument.instr_off(0)
-        self.instrument.gen_off()
+        Clock.schedule_interval(self.listen_channel, 0.4)
 
+    def listen_channel(self, dt):
+        volt1, curr1 = self.instrument.ch_measure(0)
+        volt2, curr2 = self.instrument.ch_measure(1)
+        print(curr2, curr1)
+        if curr1 > 0.001 and curr2 > 0.001:
+            self.meas_message = "Bitte warten bis sich der Strom stabilisiert hat."
+            Clock.schedule_once(lambda dt: self.measure_light(), 3)
+            Clock.unschedule(self.listen_channel)
+
+    def measure_light(self):
+        nr = self.get_testing_light_nr()
+        # Messen des Stromes beider Kanäle:
+        curr = self.instrument.ch_measure(ch_nr=0)[1], self.instrument.ch_measure(ch_nr=1)[1]
+        self.results["Stromwerte"].append(curr)
+        # Anfragen ob im Bereich
+        if self.leuchten["LED1Maximalstrom"] >= curr[0] >= self.leuchten["LED1Minimalstrom"] \
+                and self.leuchten["LED2Maximalstrom"] >= curr[1] >= self.leuchten["LED2Minimalstrom"]:
+            self.meas_message = "[color=#268d0d]Messwerte in Ordnung[/color]"
+
+            # Messung liegt im Bereich
+            self.results["Stromwerte_iO"].append(True)
+            self.optical_testing_init()
+        else:
+            # Messung liegt nicht im Bereich
+            self.add_buttons_measurement()
+
+    def add_buttons_measurement(self):
+        # Hinzufügen der Buttons um nochmal zu messen oder fortzufahren:
+        self.test_widgets["Messung_fortfahren"] = ToggleButton(size_hint_y=None, height=35,
+                                                               text="Messung trotzdem forfahren")
+        self.test_widgets["Messung_fortfahren"].bind(on_release=self.continue_meas)
+        self.test_widgets["Messung_wiederholen"] = ToggleButton(size_hint_y=None, height=35,
+                                                                text="Messung wiederholen")
+        self.test_widgets["Messung_wiederholen"].bind(on_release=self.remeasure)
+
+        box_buttons = BoxLayout(orientation="horizontal")
+        box_buttons.add_widget(self.test_widgets["Messung_wiederholen"])
+        box_buttons.add_widget(self.test_widgets["Messung_fortfahren"])
+        self.buttons_label.add_widget(box_buttons)
+        self.meas_message = "[color=ff0000]Messwerte liegen nicht im Bereich![/color]"
+
+    # Messung wiederholen
+    def remeasure(self, inst):
+        self.meas_message = "Messung wird wiederholt!"
+        # Altes Messergebnis entfernen
+        del self.results["Stromwerte"][-1]
+        # Messvorgang wieder beginnen
+        Clock.schedule_interval(self.listen_channel, 0.4)
+
+    # Messung trotzdem forfahren
+    def continue_meas(self, inst):
+        self.results["Stromwerte_iO"].append(False)
+        self.optical_testing_init()
+
+    def add_buttons_optical_test(self):
+        self.test_widgets["Leuchte_ok"] = ToggleButton(size_hint_y=None, height=35, text="Leuchte ok")
+        self.test_widgets["Leuchte_fehlerhaft"] = ToggleButton(size_hint_y=None, height=35,
+                                                                   text="Leuchte fehlerhaft")
+        self.test_widgets["Strom_umstellen"] = Switch(size_hint_y=None, height=35)
+
+        box_buttons = BoxLayout(orientation="vertical")
+        box_ok = BoxLayout(orientation="horizontal")
+        box_buttons.add_widget(box_ok)
+        box_ok.add_widget(self.test_widgets["Leuchte_ok"])
+        box_ok.add_widget(self.test_widgets["Leuchte_fehlerhaft"])
+        box_buttons.add_widget(Label(text="Strom_umstellen:"))
+        box_buttons.add_widget(self.test_widgets["Strom_umstellen"])
+
+        self.buttons_label.add_widget(box_buttons)
+
+    def optical_testing_init(self):
+        self.add_buttons_optical_test()
+        Clock.schedule_interval(self.optical_testing, 1./60.)
+
+    def optical_testing(self, dt):
+        # Strom umstellen falls Switch gedrückt wird:
+        if self.test_widgets["Strom_umstellen"].active:
+            self.instrument.instr_off(0)
+            self.instrument.instr_on(1)
+        else:
+            self.instrument.instr_off(1)
+            self.instrument.instr_on(0)
+        # Leuchte fehlerhaft:
+
+    def end_measurement(self):
+        self.instrument.gen_off()
+        self.instrument.instr_off(0)
+        self.instrument.instr_off(1)
 
 class MeasurementApp(App):
     icon = './icons/icon.png'
@@ -301,9 +431,3 @@ class MeasurementApp(App):
         w = MainWindow()
         w.build()
         return w
-
-"""
-         Label:
-            text: "[color=ff0000]ALL current Measurements will be deleted![/color]"
-            markup: True
-"""
