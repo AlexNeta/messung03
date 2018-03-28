@@ -238,10 +238,10 @@ class MainWindow(BoxLayout):
             if row[0].value is not None:
                 self.leuchten["Referenznummer"].append(row[0].value)
                 self.leuchten["Spannung"].append(row[1].value)
-                self.leuchten["LED1Minimalstrom"].append(row[2].value)
-                self.leuchten["LED1Maximalstrom"].append(row[3].value)
-                self.leuchten["LED2Minimalstrom"].append(row[4].value)
-                self.leuchten["LED2Maximalstrom"].append(row[5].value)
+                self.leuchten["LED1Minimalstrom"].append(row[2].value/1000)
+                self.leuchten["LED1Maximalstrom"].append(row[3].value/1000)
+                self.leuchten["LED2Minimalstrom"].append(row[4].value/1000)
+                self.leuchten["LED2Maximalstrom"].append(row[5].value/1000)
 
         # Laden der Personalladen:
         wb = oxl.load_workbook(realpath("excel_datei_einstellungen/Personal.xlsx"))
@@ -264,7 +264,11 @@ class MainWindow(BoxLayout):
     # Messung
 
     def init_measurement(self, dt):
-        if self.tester_name == "" or self.meas_number == "" or self.number_light == "":
+        # Falls alle Daten eingegeben und ausgewählt:
+        if self.tester_name == "" or \
+                self.meas_number == "" or \
+                self.number_light == "" or \
+                self.testing_light != "Leuchte auswählen":
             self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)."
         else:
             self.switch_start = Switch(size_hint_y=None, height=35)
@@ -328,7 +332,6 @@ class MainWindow(BoxLayout):
     def listen_channel_connected(self, dt):
         volt1, curr1 = self.instrument.ch_measure(0)
         volt2, curr2 = self.instrument.ch_measure(1)
-        print(curr2, curr1)
         if curr1 > 0.001 and curr2 > 0.001:
             self.meas_message = "Bitte warten bis sich der Strom stabilisiert hat."
             Clock.schedule_once(lambda dt: self.measure_light(), 3)
@@ -382,7 +385,6 @@ class MainWindow(BoxLayout):
         self.optical_testing_init()
 
     # Optisches testen
-
     def add_buttons_optical_test(self):
         self.test_widgets["Leuchte_ok"] = Button(size_hint_y=None, height=35, text="Leuchte ok")
         self.test_widgets["Leuchte_ok"].bind(on_release=self.light_works)
@@ -431,9 +433,12 @@ class MainWindow(BoxLayout):
         self.buttons_label.add_widget(self.test_widgets["Box_Error"])
 
     def add_defect(self, inst):
-        self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
-        self.results["Fehler"].append(self.test_widgets["Fehler_spinner"].text)
-        self.end_measurement()
+        defect = self.test_widgets["Fehler_spinner"].text
+        # Nur forfahren falls ein Defekt ausgewählt wurde
+        if defect != "Defekt auswählen":
+            self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
+            self.results["Fehler"].append()
+            self.end_measurement()
 
     def light_works(self, inst):
         self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
