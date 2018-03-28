@@ -223,7 +223,7 @@ class MainWindow(BoxLayout):
         wsh = wb.active
 
         self.leuchten["Referenznummer"] = []
-        self.leuchten["Spannng"] = []
+        self.leuchten["Spannung"] = []
         self.leuchten["Minimalstrom"] = []
         self.leuchten["Maximalstrom"] = []
 
