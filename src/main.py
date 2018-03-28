@@ -171,6 +171,7 @@ class MainWindow(BoxLayout):
     meas_message = StringProperty()
     # Results:
     results = DictProperty()
+    io_nio = ListProperty([0, 0])
 
     def build(self):
         # Startvorgang des Programms:
@@ -390,8 +391,10 @@ class MainWindow(BoxLayout):
         self.test_widgets["Leuchte_ok"].bind(on_release=self.light_works)
         self.test_widgets["Leuchte_fehlerhaft"] = Button(size_hint_y=None, height=35, text="Leuchte fehlerhaft")
         self.test_widgets["Leuchte_fehlerhaft"].bind(on_release=self.light_defect)
-        self.test_widgets["Strom_umstellen"] = Switch(size_hint_y=None, height=35)
-        self.test_widgets["Strom_umstellen"].bind(active=self.switch_light)
+        self.test_widgets["Strom_umstellen_LED1"] = Switch(size_hint_y=None, height=35)
+        self.test_widgets["Strom_umstellen_LED1"].bind(active=self.switch_light1)
+        self.test_widgets["Strom_umstellen_LED2"] = Switch(size_hint_y=None, height=35)
+        self.test_widgets["Strom_umstellen_LED2"].bind(active=self.switch_light2)
 
         self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
         box_ok = BoxLayout(orientation="horizontal")
@@ -401,20 +404,25 @@ class MainWindow(BoxLayout):
         self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen"])
 
         self.buttons_label.add_widget(self.test_widgets["Box_optisch"])
-        self.meas_message = "Mit dem Schalter zwischen den LEDs wechseln"
+        self.meas_message = "Mit dem Schaltern die LEDs ein-/ausschalten"
 
     def optical_testing_init(self):
         self.add_buttons_optical_test()
         self.instrument.instr_off(1)
 
-    def switch_light(self, inst, value):
+    def switch_light1(self, inst, value):
         # Strom umstellen falls Switch gedrückt wird:
         if value:
+            self.instrument.instr_on(0)
+        else:
             self.instrument.instr_off(0)
+
+    def switch_light2(self, inst, value):
+        # Strom umstellen falls Switch gedrückt wird:
+        if value:
             self.instrument.instr_on(1)
         else:
             self.instrument.instr_off(1)
-            self.instrument.instr_on(0)
 
     def light_defect(self, inst):
         self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
@@ -437,7 +445,7 @@ class MainWindow(BoxLayout):
         # Nur forfahren falls ein Defekt ausgewählt wurde
         if defect != "Defekt auswählen":
             self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
-            self.results["Fehler"].append()
+            self.results["Fehler"].append(defect)
             self.end_measurement()
 
     def light_works(self, inst):
@@ -450,6 +458,7 @@ class MainWindow(BoxLayout):
         self.instrument.instr_on(1)
         self.curr_light += 1
 
+        self.io_nio = sum(self.results["Stromwerte_iO"]), len(self.results["Stromwerte_iO"])
         print(self.results)
 
         if self.curr_light > self.number_light:

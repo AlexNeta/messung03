@@ -295,4 +295,13 @@ MainWindow:
                 text: root.meas_message
                 font_size: "30sp"
                 markup: True
-            Label:
+
+    BoxLayout:
+        orientation: "horizontal"
+        Label:
+        BoxLayout:
+            orientation: "vertical"
+            SmallLabel:
+                text: "Leuchte: {}/{}".format(root.curr_light, root.number_light)
+            SmallLabel:
+                text: "Leuchten i.O.: {} / n.i.O: {}".format(*root.io_nio)
