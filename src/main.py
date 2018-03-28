@@ -226,18 +226,20 @@ class MainWindow(BoxLayout):
         self.leuchten["Minimalstrom"] = []
         self.leuchten["Maximalstrom"] = []
 
-        for row in wsh.iter_rows(min_row=2):
-            self.leuchten["Referenznummer"].append(row[0].value)
-            self.leuchten["Spannng"].append(row[1].value)
-            self.leuchten["Minimalstrom"].append(row[2].value)
-            self.leuchten["Maximalstrom"].append(row[3].value)
+        for row in wsh.iter_rows(row_offset=1):
+            if row[0].value is not None:
+                self.leuchten["Referenznummer"].append(row[0].value)
+                self.leuchten["Spannng"].append(row[1].value)
+                self.leuchten["Minimalstrom"].append(row[2].value)
+                self.leuchten["Maximalstrom"].append(row[3].value)
 
         # Laden der Personalladen:
         wb = oxl.load_workbook(realpath("excel_datei_einstellungen/Personal.xlsx"))
         wsh = wb.active
 
-        for row in wsh.iter_rows(min_row=2):
-            self.personal.append(row[0].value)
+        for row in wsh.iter_rows(row_offset=1):
+            if row[0].value is not None:
+                self.personal.append(row[0].value)
 
         print(self.leuchten)
         print(self.personal)
