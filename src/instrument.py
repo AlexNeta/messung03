@@ -26,7 +26,7 @@ class Instrument:
                     self.connected = True
                     return True
             return False
-        except visa.VisaIOError:
+        except Exception:
             return False
 
     def get_id(self):
