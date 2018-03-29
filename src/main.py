@@ -46,11 +46,12 @@ class New(Popup):
         self.number_light = str(self.toolbar.parent.number_light)
 
     def make_new_file(self, name, meas_number, testing_light, number_light):
-        self.toolbar.parent.tester_name = name
-        self.toolbar.parent.meas_number = meas_number
-        self.toolbar.parent.testing_light = testing_light
-        self.toolbar.parent.number_light = int(number_light)
-        self.dismiss()
+        if name != "Namen auswählen" and meas_number != "" and testing_light != "Leuchte auswählen" and number_light != 0:
+            self.toolbar.parent.tester_name = name
+            self.toolbar.parent.meas_number = meas_number
+            self.toolbar.parent.testing_light = testing_light
+            self.toolbar.parent.number_light = int(number_light)
+            self.dismiss()
 
 
 class Save(Popup):

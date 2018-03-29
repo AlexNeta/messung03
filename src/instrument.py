@@ -17,14 +17,15 @@ class Instrument:
 
     def connect_to_device(self, instr_name):
         try:
-            self.hmp = self.rm.open_resource(instr_name)
-            self.hmp.timeout = 500
-            # If the device returns an id, then its connected:
-            if self.get_id() != "":
-                self.connected = True
-                return True
-            else:
-                return False
+            # Try 3 times before sending back False
+            for i in range(3):
+                self.hmp = self.rm.open_resource(instr_name)
+                self.hmp.timeout = 500
+                # If the device returns an id, then its connected:
+                if self.get_id() != "":
+                    self.connected = True
+                    return True
+            return False
         except visa.VisaIOError:
             return False
 
