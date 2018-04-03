@@ -408,10 +408,13 @@ class MainWindow(BoxLayout):
         self.test_widgets["Leuchte_fehlerhaft"].bind(on_release=self.light_defect)
         self.test_widgets["Strom_umstellen_LED1"] = ToggleButton(size_hint_y=None, height=35,
                                                                  text="Weiße LEDs einschalten")
-        self.test_widgets["Strom_umstellen_LED1"].bind(active=self.switch_light1)
+        self.test_widgets["Strom_umstellen_LED1"].bind(
+            on_state=self.switch_light1(self.test_widgets["Strom_umstellen_LED1"]))
         self.test_widgets["Strom_umstellen_LED2"] = ToggleButton(size_hint_y=None, height=35,
                                                                  text="Rote LEDs einschalten")
-        self.test_widgets["Strom_umstellen_LED2"].bind(active=self.switch_light2)
+        self.test_widgets["Strom_umstellen_LED2"].bind(
+            on_state=self.switch_light2(self.test_widgets["Strom_umstellen_LED2"]))
+
         # Widget vorbereiten
         self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
 
