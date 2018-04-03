@@ -15,8 +15,8 @@ def save_as(data, results, usb_path=None):
     moegliche_fehler = data["optischeFehler"]
 
     spannung = data["Spannung"]
-    strombereich1 = data["Strombereich_LED weiß"]
-    strombereich2 = data["Strombereich_LED rot"]
+    strombereich1 = data["Strombereich_LED1"]
+    strombereich2 = data["Strombereich_LED2"]
 
     now = datetime.datetime.now()
     datum = "{}.{}.{}".format(str(now.day).zfill(2), str(now.month).zfill(2), now.year)
