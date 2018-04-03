@@ -90,6 +90,9 @@ class Loading(Image):
     def not_found(self):
         self.source = "icons/Close.png"
 
+    def reset(self):
+        self.source = "icons/b_pxl.png"
+
 
 class Set(Popup):
     instr_list_view = ObjectProperty()
@@ -174,6 +177,7 @@ class MainWindow(BoxLayout):
     # Messages:
     meas_message = StringProperty()
     meas_in_range = ObjectProperty()
+    meas_in_range_label = ObjectProperty()
     # Results:
     results = DictProperty()
     io_nio = ListProperty([0, 0])
@@ -281,6 +285,10 @@ class MainWindow(BoxLayout):
                 self.testing_light == "Leuchte auswählen":
             self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)."
         else:
+            # Zurücksetzen alter Werte:
+            self.meas_in_range.reset()
+            self.meas_in_range_label.text = ""
+            # Hinzufügen des Startknopfes
             self.test_widgets["start_box"] = BoxLayout(orientation="horizontal")
             self.test_widgets["start_box"].add_widget(Label())
             self.test_widgets["Messung_starten"] = ToggleButton(size_hint_y=None, height=35, text="Messung starten")
@@ -359,15 +367,16 @@ class MainWindow(BoxLayout):
         # Anfragen ob im Bereich
         if self.leuchten["LED1Maximalstrom"][nr] >= curr[0] >= self.leuchten["LED1Minimalstrom"][nr] \
                 and self.leuchten["LED2Maximalstrom"][nr] >= curr[1] >= self.leuchten["LED2Minimalstrom"][nr]:
-            self.meas_message = "[color=#268d0d]Messwerte in Ordnung[/color]"
 
             # Messung liegt im Bereich
             self.results["Leuchten_iO"].append(True)
             self.meas_in_range.found()
+            self.meas_in_range_label.text = "[color=#268d0d]Messwerte in Ordnung[/color]"
             self.optical_testing_init()
         else:
             # Messung liegt nicht im Bereich
             self.meas_in_range.not_found()
+            self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich[/color]"
             self.add_buttons_measurement()
 
     def add_buttons_measurement(self):

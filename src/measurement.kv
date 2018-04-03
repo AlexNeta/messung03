@@ -261,6 +261,7 @@ MainWindow:
     buttons_label: buttons_label
     toolbar: toolbar
     meas_in_range: meas_in_range
+    meas_in_range_label: meas_in_range_label
 
     orientation: "vertical"
     spacing: 1
@@ -280,8 +281,14 @@ MainWindow:
             SmallLabel:
                 text: "Anzahl an Leuchten: {}".format(root.number_light)
             Label:
-        Loading:
-            id: meas_in_range
+        BoxLayout:
+            orientation: "vertical"
+            Loading:
+                id: meas_in_range
+            Label:
+                id: meas_in_range_label
+                markup: True
+
 
     BoxLayout:
         orientation: "horizontal"
