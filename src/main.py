@@ -403,24 +403,22 @@ class MainWindow(BoxLayout):
     # Optisches testen
     def add_buttons_optical_test(self):
         # Knöpfe einstellen
-        self.test_widgets["Leuchte_ok"] = Button(size_hint_y=None, height=35, text="Leuchte ok")
+        self.test_widgets["Leuchte_ok"] = Button(text="Leuchte ok")
         self.test_widgets["Leuchte_ok"].bind(on_release=self.light_works)
-        self.test_widgets["Leuchte_fehlerhaft"] = Button(size_hint_y=None, height=35, text="Leuchte fehlerhaft")
+        self.test_widgets["Leuchte_fehlerhaft"] = Button(text="Leuchte fehlerhaft")
         self.test_widgets["Leuchte_fehlerhaft"].bind(on_release=self.light_defect)
 
-        self.test_widgets["Strom_umstellen_LED1"] = Button(size_hint_y=None, height=35,
-                                                           text="Weiße LEDs einschalten / ausschalten")
+        self.test_widgets["Strom_umstellen_LED1"] = Button(text="Weiße LEDs einschalten / ausschalten")
         self.test_widgets["Strom_umstellen_LED1"].bind(on_release=self.switch_light1)
 
-        self.test_widgets["Strom_umstellen_LED2"] = Button(size_hint_y=None, height=35,
-                                                           text="Rote LEDs einschalten / ausschalten")
+        self.test_widgets["Strom_umstellen_LED2"] = Button(text="Rote LEDs einschalten / ausschalten")
         self.test_widgets["Strom_umstellen_LED2"].bind(on_release=self.switch_light2)
 
         # Widget vorbereiten
         self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
 
         # Erste Reihe:
-        box_ok = BoxLayout(orientation="horizontal")
+        box_ok = BoxLayout(orientation="horizontal", size_hint_y=None, height=35)
         box_ok.add_widget(Label())
         box_ok.add_widget(self.test_widgets["Leuchte_ok"])
         box_ok.add_widget(self.test_widgets["Leuchte_fehlerhaft"])
@@ -428,14 +426,14 @@ class MainWindow(BoxLayout):
         self.test_widgets["Box_optisch"].add_widget(box_ok)
 
         # Zweite Reihe:
-        box_led1 = BoxLayout(orientation="horizontal")
+        box_led1 = BoxLayout(orientation="horizontal", size_hint_y=None, height=35)
         box_led1.add_widget(Label())
         box_led1.add_widget(self.test_widgets["Strom_umstellen_LED1"])
         box_led1.add_widget(Label())
         self.test_widgets["Box_optisch"].add_widget(box_led1)
 
         # Dritte Reihe
-        box_led2 = BoxLayout(orientation="horizontal")
+        box_led2 = BoxLayout(orientation="horizontal", size_hint_y=None, height=35)
         box_led2.add_widget(Label())
         box_led2.add_widget(self.test_widgets["Strom_umstellen_LED2"])
         box_led2.add_widget(Label())
