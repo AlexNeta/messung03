@@ -13,7 +13,7 @@ from kivy.uix.image import Image
 from kivy.properties import NumericProperty, ObjectProperty, StringProperty, DictProperty, ListProperty
 from kivy.clock import Clock
 from kivy.uix.listview import ListView
-from kivy.uix.switch import Switch
+from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.label import Label
@@ -46,7 +46,10 @@ class New(Popup):
         self.number_light = str(self.toolbar.parent.number_light)
 
     def make_new_file(self, name, meas_number, testing_light, number_light):
-        if name != "Namen auswählen" and meas_number != "" and testing_light != "Leuchte auswählen" and number_light != 0:
+        if name != "Namen auswählen" and \
+                meas_number != "" and \
+                testing_light != "Leuchte auswählen" and \
+                number_light != "" and number_light != "0":
             self.toolbar.parent.tester_name = name
             self.toolbar.parent.meas_number = meas_number
             self.toolbar.parent.testing_light = testing_light
@@ -166,7 +169,6 @@ class MainWindow(BoxLayout):
     curr_light = NumericProperty()      # Aktuelle Leuchte (int)
     # Measurement-Switch:
     buttons_label = ObjectProperty()
-    switch_start = ObjectProperty()
     test_widgets = DictProperty()
     # Messages:
     meas_message = StringProperty()
@@ -191,6 +193,7 @@ class MainWindow(BoxLayout):
         Clock.schedule_interval(self.init_measurement, 1. / 10.)
         # Starten des ersten Fensters zum ausfüllen der Daten:
         Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
+
 
     def get_measurement_data(self):
         print("Laden der Einstellungen aus:")
@@ -273,12 +276,16 @@ class MainWindow(BoxLayout):
         # Falls alle Daten eingegeben und ausgewählt:
         if self.tester_name == "" or \
                 self.meas_number == "" or \
-                self.number_light == "" or \
+                self.number_light == 0 or \
                 self.testing_light == "Leuchte auswählen":
             self.meas_message = "Bitte neue Messung einrichten\n(weißes Blatt oben anklicken)."
         else:
-            self.switch_start = Switch(size_hint_y=None, height=35)
-            self.buttons_label.add_widget(self.switch_start)
+            self.test_widgets["start_box"] = BoxLayout(orientation="horizontal")
+            self.test_widgets["start_box"].add_widget(Label())
+            self.test_widgets["Messung_starten"] = ToggleButton(size_hint_y=None, height=35, text="Messung starten")
+            self.test_widgets["start_box"].add_widget(self.test_widgets["Messung_starten"])
+            self.test_widgets["start_box"].add_widget(Label())
+            self.buttons_label.add_widget(self.test_widgets["start_box"])
             self.curr_light = 1  # Start at 1
             # Hinzufügen der Ergebnisse:
             self.results["Stromwerte"] = []
@@ -291,9 +298,9 @@ class MainWindow(BoxLayout):
         if self.instrument.connected:
             self.meas_message = "Gerät erkannt.\n" \
                                 "Messung kann gestartet werden."
-        if self.instrument.connected and self.switch_start.active:
+        if self.instrument.connected and self.test_widgets["Messung_starten"] == "down":
             self.meas_message = "Messung wurde gestartet."
-            self.buttons_label.remove_widget(self.switch_start)
+            self.buttons_label.remove_widget(self.test_widgets["start_box"])
             self.init_channel()
             Clock.unschedule(self.start_measurement)
         elif not self.instrument.connected:
@@ -393,22 +400,43 @@ class MainWindow(BoxLayout):
 
     # Optisches testen
     def add_buttons_optical_test(self):
+        # Knöpfe einstellen
         self.test_widgets["Leuchte_ok"] = Button(size_hint_y=None, height=35, text="Leuchte ok")
         self.test_widgets["Leuchte_ok"].bind(on_release=self.light_works)
         self.test_widgets["Leuchte_fehlerhaft"] = Button(size_hint_y=None, height=35, text="Leuchte fehlerhaft")
         self.test_widgets["Leuchte_fehlerhaft"].bind(on_release=self.light_defect)
-        self.test_widgets["Strom_umstellen_LED1"] = Switch(size_hint_y=None, height=35)
+        self.test_widgets["Strom_umstellen_LED1"] = ToggleButton(size_hint_y=None, height=35,
+                                                                 text="Weiße LEDs einschalten")
         self.test_widgets["Strom_umstellen_LED1"].bind(active=self.switch_light1)
-        self.test_widgets["Strom_umstellen_LED2"] = Switch(size_hint_y=None, height=35)
+        self.test_widgets["Strom_umstellen_LED2"] = ToggleButton(size_hint_y=None, height=35,
+                                                                 text="Rote LEDs einschalten")
         self.test_widgets["Strom_umstellen_LED2"].bind(active=self.switch_light2)
-
+        # Widget vorbereiten
         self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
+
+        # Erste Reihe:
         box_ok = BoxLayout(orientation="horizontal")
-        self.test_widgets["Box_optisch"].add_widget(box_ok)
+        box_ok.add_widget(Label())
         box_ok.add_widget(self.test_widgets["Leuchte_ok"])
         box_ok.add_widget(self.test_widgets["Leuchte_fehlerhaft"])
-        self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen_LED1"])
-        self.test_widgets["Box_optisch"].add_widget(self.test_widgets["Strom_umstellen_LED2"])
+        box_ok.add_widget(Label())
+        self.test_widgets["Box_optisch"].add_widget(box_ok)
+
+        # Zweite Reihe:
+        box_led1 = BoxLayout(orientation="horizontal")
+        box_led1.add_widget(Label())
+        box_led1.add_widget(self.test_widgets["Strom_umstellen_LED1"])
+        box_led1.add_widget(Label())
+        self.test_widgets["Box_optisch"].add_widget(box_led1)
+
+        # Dritte Reihe
+        box_led2 = BoxLayout(orientation="horizontal")
+        box_led2.add_widget(Label())
+        box_led2.add_widget(self.test_widgets["Strom_umstellen_LED2"])
+        box_led2.add_widget(Label())
+        self.test_widgets["Box_optisch"].add_widget(box_led2)
+
+        # Widgets einfügen
         self.buttons_label.add_widget(self.test_widgets["Box_optisch"])
         self.meas_message = "Mit dem Schaltern die LEDs ein-/ausschalten"
 
@@ -417,16 +445,16 @@ class MainWindow(BoxLayout):
         self.instrument.instr_off(0)
         self.instrument.instr_off(1)
 
-    def switch_light1(self, inst, value):
+    def switch_light1(self, inst):
         # Strom umstellen falls Switch gedrückt wird:
-        if value:
+        if inst.state == "down":
             self.instrument.instr_on(0)
         else:
             self.instrument.instr_off(0)
 
-    def switch_light2(self, inst, value):
+    def switch_light2(self, inst):
         # Strom umstellen falls Switch gedrückt wird:
-        if value:
+        if inst.state == "down":
             self.instrument.instr_on(1)
         else:
             self.instrument.instr_off(1)
