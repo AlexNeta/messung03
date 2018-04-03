@@ -4,6 +4,7 @@ from src.instrument import Instrument
 from csv import reader, writer, QUOTE_MINIMAL
 from os.path import realpath
 import openpyxl as oxl
+import src.save as save
 
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
@@ -60,16 +61,13 @@ class New(Popup):
 class Save(Popup):
     toolbar = ObjectProperty()
     save_dire = StringProperty("")
-    save_name = StringProperty("Untitled")
 
     def build(self, toolbar_parent):
         self.toolbar = toolbar_parent
         self.save_dire = self.toolbar.parent.save_dire
-        self.save_name = self.toolbar.parent.save_name[:-5]
 
-    def save_file_name(self, name, dire):
+    def save_file_name(self, dire):
         self.toolbar.parent.save_dire = dire
-        self.toolbar.parent.save_name = name
         self.toolbar.parent.save_settings()
         self.dismiss()
 
@@ -157,7 +155,6 @@ class MainWindow(BoxLayout):
     # Settings:
     instr_name = StringProperty("")  # Save in settings
     save_dire = StringProperty("")  # Save in settings
-    save_name = StringProperty("Untitled.xlsx")  # Save in settings
     saved_as = StringProperty("")
     # From-Excel-Files
     personal = ListProperty()
@@ -199,7 +196,6 @@ class MainWindow(BoxLayout):
         # Starten des ersten Fensters zum ausfüllen der Daten:
         Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
 
-
     def get_measurement_data(self):
         print("Laden der Einstellungen aus:")
         print(realpath("src/settings.csv"))
@@ -220,11 +216,11 @@ class MainWindow(BoxLayout):
                 save_file.append("".join(x))
         # Load data
         print("Einstellungen:", save_file)
-        self.save_dire, self.save_name, self.instr_name = save_file
+        self.save_dire, name, self.instr_name = save_file
 
     def save_settings(self):
         # Save data
-        save_file = self.save_dire, self.save_name, self.instr_name
+        save_file = self.save_dire, "", self.instr_name
 
         with open(realpath("src/settings.csv"), "w", newline="") as csv_file:
             r = writer(csv_file, delimiter=" ", quotechar="|", quoting=QUOTE_MINIMAL)
@@ -345,15 +341,13 @@ class MainWindow(BoxLayout):
 
     def listen_channel_disconnected(self, dt):
         volt1, curr1 = self.instrument.ch_measure(0)
-        volt2, curr2 = self.instrument.ch_measure(1)
-        if curr1 < 0.001 and curr2 < 0.001:
+        if curr1 < 0.001:
             Clock.schedule_once(lambda dt: self.connect_light(), 1)
             Clock.unschedule(self.listen_channel_disconnected)
 
     def listen_channel_connected(self, dt):
         volt1, curr1 = self.instrument.ch_measure(0)
-        volt2, curr2 = self.instrument.ch_measure(1)
-        if curr1 > 0.001 and curr2 > 0.001:
+        if curr1 > 0.001:
             self.meas_message = "Bitte warten bis sich der Strom stabilisiert hat."
             Clock.schedule_once(lambda dt: self.measure_light(), 3)
             Clock.unschedule(self.listen_channel_connected)
@@ -363,10 +357,22 @@ class MainWindow(BoxLayout):
         # Messen des Stromes beider Kanäle:
         curr = self.instrument.ch_measure(ch_nr=0)[1], self.instrument.ch_measure(ch_nr=1)[1]
         self.results["Stromwerte"].append(curr)
-        # Anfragen ob im Bereich
-        if self.leuchten["LED1Maximalstrom"][nr] >= curr[0] >= self.leuchten["LED1Minimalstrom"][nr] \
-                and self.leuchten["LED2Maximalstrom"][nr] >= curr[1] >= self.leuchten["LED2Minimalstrom"][nr]:
 
+        led1 = self.leuchten["LED1Minimalstrom"][nr], self.leuchten["LED1Maximalstrom"][nr]
+        led2 = self.leuchten["LED2Minimalstrom"][nr], self.leuchten["LED2Maximalstrom"][nr]
+
+        # Anfragen ob im Bereich (wenn nur 0, 0 angegeben wird der Vergleich übersprungen)
+        if led1 != (0, 0):
+            led1_in_range = led1[0] >= curr[0] >= led1[1]
+        else:
+            led1_in_range = True
+
+        if led2 != (0, 0):
+            led2_in_range = led2[0] >= curr[1] >= led2[1]
+        else:
+            led2_in_range = True
+
+        if led1_in_range and led2_in_range:
             # Messung liegt im Bereich
             self.results["Leuchten_iO"].append(True)
             self.meas_in_range.found()
@@ -477,27 +483,35 @@ class MainWindow(BoxLayout):
     def light_defect(self, inst):
         self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
         # Falls Leuchte defekt
-        # Hinzufügen eines Spinners zur Auswahl des Defekts
-        self.test_widgets["Fehler_spinner"] = Spinner(size_hint_y=None, height=35,
-                                                      text="Auswahl des Fehlers",
-                                                      values=self.leuchten["optischeFehler"])
+        # Hinzufügen von Fehler-Knöpfen zur Auswahl des Defekts
+        err_box = BoxLayout(orientation="vertical", size_hint_y=None)
+        self.test_widgets["Fehler_Liste"] = []
+        for e in self.leuchten["optischeFehler"]:
+            btn = ToggleButton(size_hint_y=None, height=35, text=e)
+            self.test_widgets["Fehler_Liste"].append(btn)
+            err_box.add_widget(btn)
+
         self.test_widgets["Auswahl"] = Button(size_hint_y=None, height=35,
                                               text="Fehler bestätigen",
                                               background_color=(1, 0, 0, 1))
         self.test_widgets["Auswahl"].bind(on_release=self.add_defect)
 
         self.test_widgets["Box_Error"] = BoxLayout(orientation="horizontal")
-        self.test_widgets["Box_Error"].add_widget(self.test_widgets["Fehler_spinner"])
+        self.test_widgets["Box_Error"].add_widget(err_box)
         self.test_widgets["Box_Error"].add_widget(self.test_widgets["Auswahl"])
 
         self.buttons_label.add_widget(self.test_widgets["Box_Error"])
 
     def add_defect(self, inst):
         defect = self.test_widgets["Fehler_spinner"].text
-        # Nur forfahren falls ein Defekt ausgewählt wurde
-        if defect != "Auswahl des Fehlers":
+        chosen = []
+        for defect in self.test_widgets["Fehler_Liste"]:
+            if defect.state == "down":
+                chosen.append(defect.text)
+        # Nur forfahren falls mindestens ein Defekt ausgewählt wurde
+        if len(chosen) > 0:
             self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
-            self.results["Fehler"].append(defect)
+            self.results["Fehler"].append(chosen)
             # Ändern des letzten Ergebnisses falls optisch die Messung nicht in Ordnung ist
             self.results["Leuchten_iO"][-1] = False
             self.end_measurement()
@@ -512,7 +526,9 @@ class MainWindow(BoxLayout):
 
         liste = self.results["Leuchten_iO"]
         self.io_nio = sum(liste), len(liste) - sum(liste)
-        print(self.results)
+
+        print("EINSTELLUNGEN:", self.leuchten)
+        print("ERGEBNISSE: ", self.results)
 
         if self.curr_light > self.number_light:
             # Kanäle ausschalten
@@ -533,8 +549,21 @@ class MainWindow(BoxLayout):
 
     # Speichern aller Daten
     def save_result(self):
-        # TODO Speichern
-        pass
+        nr = self.get_testing_light_nr()
+
+        data = {"tester_name": self.tester_name,
+                "meas_number": self.meas_number,
+                "testing_light": self.testing_light,
+                "number_light": self.number_light,
+                "optischeFehler": self.leuchten["optischeFehler"],
+                "Spannung": self.leuchten["Spannung"][nr],
+                "Strombereich_LED1": (self.leuchten["LED1Minimalstrom"][nr], self.leuchten["LED1Maximalstrom"][nr]),
+                "Strombereich_LED2": (self.leuchten["LED2Minimalstrom"][nr], self.leuchten["LED2Maximalstrom"][nr])}
+
+        results = {"Stromwerte": self.results["Stromwerte"],
+                   "opt_Fehler": self.results["Fehler"]}
+
+        save.save_as(data, results, usb_path=self.save_dire)
 
 
 class MeasurementApp(App):

@@ -146,7 +146,7 @@
 <Save@Popup>:
     size_hint: .9, .9
     auto_dismiss: False
-    title: "Alle Messungen werden gespeichert in: " + filechooser.path
+    title: "Bitte das Verzeichnis des USB-Sticks angeben: " + filechooser.path
     BoxLayout:
         orientation: "vertical"
         spacing: 15
@@ -162,28 +162,12 @@
                     rectangle: 0, 0, self.width, self.height
         BoxLayout:
             orientation: "horizontal"
-            size_hint_y: None
-            height: 35
-            Label:
-                size_hint_x: None
-            Label:
-                text: "File Name:"
-            TextInput:
-                id: name
-                multiline: False
-                text: root.save_name
-            Label:
-                text: ".xlsx"
-            Label:
-                size_hint_x: None
-        BoxLayout:
-            orientation: "horizontal"
             spacing: 10
             size_hint_y: None
             height: 40
             Button:
                 text: "Speicherort ausw\u00e4hlen"
-                on_release: root.save_file_name(name.text + ".xlsx", filechooser.path)
+                on_release: root.save_file_name(filechooser.path)
             Button:
                 text: "Abbrechen"
                 on_release: root.dismiss()
@@ -288,6 +272,8 @@ MainWindow:
             Label:
                 id: meas_in_range_label
                 markup: True
+                size_hint_y: None
+                height: 35
 
 
     BoxLayout:
