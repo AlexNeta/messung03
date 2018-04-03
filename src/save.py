@@ -15,15 +15,15 @@ def save_as(data, results, usb_path=None):
     moegliche_fehler = data["optischeFehler"]
 
     spannung = data["Spannung"]
-    strombereich1 = data["Strombereich_LED1"]
-    strombereich2 = data["Strombereich_LED2"]
+    strombereich1 = data["Strombereich_LED weiß"]
+    strombereich2 = data["Strombereich_LED rot"]
 
     now = datetime.datetime.now()
     datum = "{}.{}.{}".format(str(now.day).zfill(2), str(now.month).zfill(2), now.year)
     save_datum = "{}-{}-{}".format(now.year,
                                    str(now.month).zfill(2),
                                    str(now.day).zfill(2))
-    uhrzeit = "{}:{}".format(now.hour, now.minute)
+    uhrzeit = "{}:{}".format(str(now.hour).zfill(2), str(now.minute).zfill(2))
 
     leuchte_werte = {"stromwerte": results["Stromwerte"], "opt_Fehler": results["opt_Fehler"]}
 
@@ -108,7 +108,7 @@ def save_as(data, results, usb_path=None):
 
         ws.write(row, col, "Leuchte", border)
         ws.write(row, col + 1, "Stromwerte LED weiß [mA]", border)
-        ws.write(row, col + 2, "Stromwerte LED2 rot [mA]", border)
+        ws.write(row, col + 2, "Stromwerte LED rot [mA]", border)
         ws.write(row - 1, col + 3, "optische Fehler", border)
         # Add all possible optical errors:
         for i, err in enumerate(moegliche_fehler):
