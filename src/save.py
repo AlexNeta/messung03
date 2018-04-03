@@ -20,13 +20,15 @@ def save_as(data, results, usb_path=None):
 
     now = datetime.datetime.now()
     datum = "{}.{}.{}".format(now.day, now.month, now.year)
+    save_datum = "{}-{}-{}".format(now.year, now.month, now.day)
     uhrzeit = "{}:{}".format(now.hour, now.minute)
 
     leuchte_werte = {"stromwerte": results["Stromwerte"], "opt_Fehler": results["opt_Fehler"]}
 
-    name = "{}_{}_{}".format(datum, uhrzeit, pruefnummer)
+    name = "{}__{}__{}".format(save_datum, uhrzeit, pruefnummer)
     save_path = realpath("messergebnisse/{}.xlsx".format(name))
     if usb_path is not None:
+        usb_path = realpath("{}/{}.xlsx".format(usb_path, name))
         save_path = (save_path, realpath(usb_path))
 
     # __________________________________________________
@@ -119,10 +121,12 @@ def save_as(data, results, usb_path=None):
         for i, curr in enumerate(leuchte_werte["stromwerte"]):
             ws.write(row + 1 + i, col, i + 1)
 
-            color = get_color(strombereich1[0], strombereich1[1], curr[0])
-            ws.write(row + 1 + i, col + 1, curr[0], color)
-            color = get_color(strombereich2[0], strombereich2[1], curr[1])
-            ws.write(row + 1 + i, col + 2, curr[1], color)
+            if strombereich1[0] != 0 and strombereich1[1] != 0:
+                color = get_color(strombereich1[0], strombereich1[1], curr[0])
+                ws.write(row + 1 + i, col + 1, curr[0], color)
+            if strombereich2[0] != 0 and strombereich2[1] != 0:
+                color = get_color(strombereich2[0], strombereich2[1], curr[1])
+                ws.write(row + 1 + i, col + 2, curr[1], color)
 
             opt_errors = leuchte_werte["opt_Fehler"][i]
             for j, err in enumerate(moegliche_fehler):
