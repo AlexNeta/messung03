@@ -19,8 +19,10 @@ def save_as(data, results, usb_path=None):
     strombereich2 = data["Strombereich_LED2"]
 
     now = datetime.datetime.now()
-    datum = "{}.{}.{}".format(now.day, now.month, now.year)
-    save_datum = "{}-{}-{}".format(now.year, now.month, now.day)
+    datum = "{}.{}.{}".format(str(now.day).zfill(2), str(now.month).zfill(2), now.year)
+    save_datum = "{}-{}-{}".format(now.year,
+                                   str(now.month).zfill(2),
+                                   str(now.day).zfill(2))
     uhrzeit = "{}:{}".format(now.hour, now.minute)
 
     leuchte_werte = {"stromwerte": results["Stromwerte"], "opt_Fehler": results["opt_Fehler"]}
@@ -85,10 +87,10 @@ def save_as(data, results, usb_path=None):
 
         ws.write(row, col + 1, spannung, top_border)
         ws.write(row, col + 2, "", top_border)
-        ws.write(row + 1, col + 1, strombereich1[0])
-        ws.write(row + 1, col + 2, strombereich1[1])
-        ws.write(row + 2, col + 1, strombereich2[0], bottom_border)
-        ws.write(row + 2, col + 2, strombereich2[1], bottom_border)
+        ws.write(row + 1, col + 1, strombereich1[0]*1000)
+        ws.write(row + 1, col + 2, strombereich1[1]*1000)
+        ws.write(row + 2, col + 1, strombereich2[0]*1000, bottom_border)
+        ws.write(row + 2, col + 2, strombereich2[1]*1000, bottom_border)
 
         # Write date and time:
         row -= 5
@@ -105,8 +107,8 @@ def save_as(data, results, usb_path=None):
         col -= 3
 
         ws.write(row, col, "Leuchte", border)
-        ws.write(row, col + 1, "Stromwerte LED1", border)
-        ws.write(row, col + 2, "Stromwerte LED2", border)
+        ws.write(row, col + 1, "Stromwerte LED weiß [mA]", border)
+        ws.write(row, col + 2, "Stromwerte LED2 rot [mA]", border)
         ws.write(row - 1, col + 3, "optische Fehler", border)
         # Add all possible optical errors:
         for i, err in enumerate(moegliche_fehler):
@@ -123,10 +125,10 @@ def save_as(data, results, usb_path=None):
 
             if strombereich1[0] != 0 and strombereich1[1] != 0:
                 color = get_color(strombereich1[0], strombereich1[1], curr[0])
-                ws.write(row + 1 + i, col + 1, curr[0], color)
+                ws.write(row + 1 + i, col + 1, curr[0]*1000, color)
             if strombereich2[0] != 0 and strombereich2[1] != 0:
                 color = get_color(strombereich2[0], strombereich2[1], curr[1])
-                ws.write(row + 1 + i, col + 2, curr[1], color)
+                ws.write(row + 1 + i, col + 2, curr[1]*1000, color)
 
             opt_errors = leuchte_werte["opt_Fehler"][i]
             for j, err in enumerate(moegliche_fehler):

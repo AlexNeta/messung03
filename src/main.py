@@ -433,6 +433,7 @@ class MainWindow(BoxLayout):
 
         # Widget vorbereiten
         self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
+        self.test_widgets["Box_optisch"].add_widget(Label())
 
         # Erste Reihe:
         box_ok = BoxLayout(orientation="horizontal", size_hint_y=None, height=35)
@@ -536,6 +537,8 @@ class MainWindow(BoxLayout):
             # Kanäle ausschalten
             self.instrument.instr_off(0)
             self.instrument.instr_off(1)
+            # Messergebnisse speichern
+            self.save_result()
             # Messung zu Ende neues Fesnster Öffnen
             self.tester_name = ""
             self.curr_light = 1
@@ -543,7 +546,6 @@ class MainWindow(BoxLayout):
             Clock.schedule_interval(self.init_measurement, 1. / 10.)
             # Starten des ersten Fensters zum ausfüllen der Daten:
             Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
-            self.save_result()
         else:
             self.instrument.instr_on(0)
             self.instrument.instr_on(1)
