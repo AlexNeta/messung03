@@ -288,6 +288,7 @@ class MainWindow(BoxLayout):
             self.buttons_label.add_widget(self.test_widgets["start_box"])
             self.curr_light = 1  # Start at 1
             # Hinzufügen der Ergebnisse:
+            self.io_nio = [0, 0]
             self.results["Stromwerte"] = []
             self.results["Leuchten_iO"] = []
             self.results["Fehler"] = []
@@ -298,7 +299,7 @@ class MainWindow(BoxLayout):
         if self.instrument.connected:
             self.meas_message = "Gerät erkannt.\n" \
                                 "Messung kann gestartet werden."
-        if self.instrument.connected and self.test_widgets["Messung_starten"] == "down":
+        if self.instrument.connected and self.test_widgets["Messung_starten"].state == "down":
             self.meas_message = "Messung wurde gestartet."
             self.buttons_label.remove_widget(self.test_widgets["start_box"])
             self.init_channel()
