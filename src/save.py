@@ -64,7 +64,6 @@ def save_as(data, results, usb_path=None):
         ws.merge_range(0, 0,
                        0, 2 + len(moegliche_fehler), "Messergebnisse der Strommessungen", label)
 
-
         # Write input data:
         row += 2
 
@@ -114,8 +113,8 @@ def save_as(data, results, usb_path=None):
         for i, err in enumerate(moegliche_fehler):
             ws.write(row, col + 3 + i, err, border)
 
-        def get_color(min_curr, max_curr, curr):
-            if min_curr <= curr <= max_curr:
+        def get_color(min_curr, max_curr, c):
+            if min_curr <= c <= max_curr:
                 return green
             else:
                 return red
