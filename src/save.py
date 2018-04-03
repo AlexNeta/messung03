@@ -22,7 +22,7 @@ def save_as(data, results, usb_path=None):
     datum = "{}.{}.{}".format(now.day, now.month, now.year)
     uhrzeit = "{}:{}".format(now.hour, now.minute)
 
-    leuchte_werte = {"stromwerte": results["Stromwerte"], "optische_Fehler": results["opt_Fehler"]}
+    leuchte_werte = {"stromwerte": results["Stromwerte"], "opt_Fehler": results["opt_Fehler"]}
 
     name = "{}_{}_{}".format(datum, uhrzeit, pruefnummer)
     save_path = realpath("messergebnisse/{}.xlsx".format(name))

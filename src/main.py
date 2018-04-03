@@ -363,12 +363,12 @@ class MainWindow(BoxLayout):
 
         # Anfragen ob im Bereich (wenn nur 0, 0 angegeben wird der Vergleich übersprungen)
         if led1 != (0, 0):
-            led1_in_range = led1[0] >= curr[0] >= led1[1]
+            led1_in_range = led1[0] <= curr[0] <= led1[1]
         else:
             led1_in_range = True
 
         if led2 != (0, 0):
-            led2_in_range = led2[0] >= curr[1] >= led2[1]
+            led2_in_range = led2[0] <= curr[1] <= led2[1]
         else:
             led2_in_range = True
 
@@ -520,7 +520,7 @@ class MainWindow(BoxLayout):
 
     def light_works(self, inst):
         self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
-        self.results["Fehler"].append("keine")
+        self.results["Fehler"].append([])
         self.end_measurement()
 
     def end_measurement(self):
