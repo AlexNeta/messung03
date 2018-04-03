@@ -410,13 +410,11 @@ class MainWindow(BoxLayout):
 
         self.test_widgets["Strom_umstellen_LED1"] = Button(size_hint_y=None, height=35,
                                                            text="Weiße LEDs einschalten / ausschalten")
-        self.test_widgets["Strom_umstellen_LED1"].bind(
-            on_release=self.switch_light1(self.test_widgets["Strom_umstellen_LED1"]))
+        self.test_widgets["Strom_umstellen_LED1"].bind(on_release=self.switch_light1)
 
         self.test_widgets["Strom_umstellen_LED2"] = Button(size_hint_y=None, height=35,
                                                            text="Rote LEDs einschalten / ausschalten")
-        self.test_widgets["Strom_umstellen_LED2"].bind(
-            on_release=self.switch_light2(self.test_widgets["Strom_umstellen_LED2"]))
+        self.test_widgets["Strom_umstellen_LED2"].bind(on_release=self.switch_light2)
 
         # Widget vorbereiten
         self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
