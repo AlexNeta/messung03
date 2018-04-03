@@ -161,6 +161,7 @@ class MainWindow(BoxLayout):
     leuchten = DictProperty()
     # Instrument:
     instrument = ObjectProperty()
+    instr_state = ListProperty([False, False, False, False])
     # Setup:
     tester_name = StringProperty()      # Name des Testers
     meas_number = StringProperty()      # Name der Messung
@@ -406,14 +407,16 @@ class MainWindow(BoxLayout):
         self.test_widgets["Leuchte_ok"].bind(on_release=self.light_works)
         self.test_widgets["Leuchte_fehlerhaft"] = Button(size_hint_y=None, height=35, text="Leuchte fehlerhaft")
         self.test_widgets["Leuchte_fehlerhaft"].bind(on_release=self.light_defect)
-        self.test_widgets["Strom_umstellen_LED1"] = ToggleButton(size_hint_y=None, height=35,
-                                                                 text="Weiße LEDs einschalten")
+
+        self.test_widgets["Strom_umstellen_LED1"] = Button(size_hint_y=None, height=35,
+                                                           text="Weiße LEDs einschalten / ausschalten")
         self.test_widgets["Strom_umstellen_LED1"].bind(
-            on_state=self.switch_light1(self.test_widgets["Strom_umstellen_LED1"]))
-        self.test_widgets["Strom_umstellen_LED2"] = ToggleButton(size_hint_y=None, height=35,
-                                                                 text="Rote LEDs einschalten")
+            on_release=self.switch_light1(self.test_widgets["Strom_umstellen_LED1"]))
+
+        self.test_widgets["Strom_umstellen_LED2"] = Button(size_hint_y=None, height=35,
+                                                           text="Rote LEDs einschalten / ausschalten")
         self.test_widgets["Strom_umstellen_LED2"].bind(
-            on_state=self.switch_light2(self.test_widgets["Strom_umstellen_LED2"]))
+            on_release=self.switch_light2(self.test_widgets["Strom_umstellen_LED2"]))
 
         # Widget vorbereiten
         self.test_widgets["Box_optisch"] = BoxLayout(orientation="vertical")
@@ -450,18 +453,22 @@ class MainWindow(BoxLayout):
         self.instrument.instr_off(1)
 
     def switch_light1(self, inst):
-        # Strom umstellen falls Switch gedrückt wird:
-        if inst.state == "down":
+        # Strom umstellen falls Knopf gedrückt wird:
+        if self.instr_state[0] is False:
             self.instrument.instr_on(0)
+            self.instr_state[0] = True
         else:
             self.instrument.instr_off(0)
+            self.instr_state[0] = False
 
     def switch_light2(self, inst):
-        # Strom umstellen falls Switch gedrückt wird:
-        if inst.state == "down":
+        # Strom umstellen falls Knopf gedrückt wird:
+        if self.instr_state[1] is False:
             self.instrument.instr_on(1)
+            self.instr_state[1] = True
         else:
             self.instrument.instr_off(1)
+            self.instr_state[1] = False
 
     def light_defect(self, inst):
         self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
