@@ -16,7 +16,6 @@ from kivy.clock import Clock
 from kivy.uix.listview import ListView
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
-from kivy.uix.spinner import Spinner
 from kivy.uix.label import Label
 # _____________________________________________________________________________________________________________________
 # Toolbar
