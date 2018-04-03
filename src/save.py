@@ -81,8 +81,8 @@ def save_as(data, results, usb_path=None):
         row += 5
 
         ws.write(row, col, "Spannung [V]", top_border)
-        ws.write(row + 1, col, "Strombereich LED1 [mA]")
-        ws.write(row + 2, col, "Strombereich LED2 [mA]", bottom_border)
+        ws.write(row + 1, col, "Strombereich LED weiß [mA]")
+        ws.write(row + 2, col, "Strombereich LED rot [mA]", bottom_border)
 
         ws.write(row, col + 1, spannung, top_border)
         ws.write(row, col + 2, "", top_border)
