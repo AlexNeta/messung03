@@ -24,13 +24,6 @@ def save_as(data, results, usb_path=None):
 
     leuchte_werte = {"stromwerte": results["Stromwerte"], "optische_Fehler": results["opt_Fehler"]}
 
-    #####
-    leuchte_werte = {"Stromwerte": [(370, 1080), (400, 1050), (350, 1048)],
-                     "opt_Fehler": [[],
-                                    ["Luftblasen über dem LED-Band", "Vergussmaterial über die LED gelaufen"],
-                                    ["Offene Luftblasen"]]}
-    #####
-
     name = "{}_{}_{}".format(datum, uhrzeit, pruefnummer)
     save_path = realpath("messergebnisse/{}.xlsx".format(name))
     if usb_path is not None:

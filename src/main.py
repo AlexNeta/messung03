@@ -381,7 +381,10 @@ class MainWindow(BoxLayout):
         else:
             # Messung liegt nicht im Bereich
             self.meas_in_range.not_found()
-            self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich[/color]"
+            self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich!" \
+                                            "{}, {}, {}[/color]".format(self.results["Stromwerte"][-1],
+                                                                        self.leuchten["LED1Maximalstrom"][nr],
+                                                                        self.leuchten["LED2Maximalstrom"][nr])
             self.add_buttons_measurement()
 
     def add_buttons_measurement(self):
@@ -503,7 +506,6 @@ class MainWindow(BoxLayout):
         self.buttons_label.add_widget(self.test_widgets["Box_Error"])
 
     def add_defect(self, inst):
-        defect = self.test_widgets["Fehler_spinner"].text
         chosen = []
         for defect in self.test_widgets["Fehler_Liste"]:
             if defect.state == "down":
