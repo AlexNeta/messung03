@@ -594,6 +594,9 @@ class MainWindow(BoxLayout):
         Clock.unschedule(self.listen_channel_disconnected)
         Clock.unschedule(self.listen_channel_connected)
 
+        Clock.unschedule(self.connect_light)
+        Clock.unschedule(self.measure_light)
+
         # Messung zu Ende neues Fesnster Öffnen
         self.tester_name = ""
         self.curr_light = 1
