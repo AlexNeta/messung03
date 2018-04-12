@@ -587,6 +587,11 @@ class MainWindow(BoxLayout):
         self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
         self.buttons_label.remove_widget(self.test_widgets["Box_Messung"])
         self.buttons_label.remove_widget(self.test_widgets["start_box"])
+        # Abbrechen aller wiederholenden Funktionen
+        Clock.unschedule(self.init_measurement)
+        Clock.unschedule(self.start_measurement)
+        Clock.unschedule(self.listen_channel_disconnected)
+        Clock.unschedule(self.listen_channel_connected)
         # Messung zu Ende neues Fesnster Öffnen
         self.tester_name = ""
         self.curr_light = 1
