@@ -210,6 +210,12 @@ class MainWindow(BoxLayout):
         # Starten des ersten Fensters zum ausfüllen der Daten:
         Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
 
+        # Leere Knöpfe zum abbrechen der Messung
+        self.test_widgets["Box_optisch"] = BoxLayout()
+        self.test_widgets["Box_Error"] = BoxLayout()
+        self.test_widgets["Box_Messung"] = BoxLayout()
+        self.test_widgets["start_box"] = BoxLayout()
+
     def get_measurement_data(self):
         print("Laden der Einstellungen aus:")
         print(realpath("src/settings.csv"))
@@ -575,6 +581,11 @@ class MainWindow(BoxLayout):
             self.disconnect_light()
 
     def reset_values(self):
+        # Entfernen aller Knöpfe
+        self.buttons_label.remove_widget(self.test_widgets["Box_optisch"])
+        self.buttons_label.remove_widget(self.test_widgets["Box_Error"])
+        self.buttons_label.remove_widget(self.test_widgets["Box_Messung"])
+        self.buttons_label.remove_widget(self.test_widgets["start_box"])
         # Messung zu Ende neues Fesnster Öffnen
         self.tester_name = ""
         self.curr_light = 1
