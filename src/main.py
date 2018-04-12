@@ -417,7 +417,7 @@ class MainWindow(BoxLayout):
             self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich![/color]\n" \
                                             "LED1: {} mA <[color=#ff0000] {} mA [/color]< {} mA\n" \
                                             "LED2: {} mA <[color=#ff0000] {} mA [/color]< {} mA"\
-                .format(led1[0], curr[0], led1[1], led2[0], curr[1], led2[1])
+                .format(led1[0]*1000, curr[0]*1000, led1[1]*1000, led2[0]*1000, curr[1]*1000, led2[1]*1000)
             self.add_buttons_measurement()
 
     def add_buttons_measurement(self):
