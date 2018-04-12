@@ -380,7 +380,10 @@ class MainWindow(BoxLayout):
         else:
             # Messung liegt nicht im Bereich
             self.meas_in_range.not_found()
-            self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich![/color]"
+            self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich![/color]\n" \
+                                            "LED1: {} mA <[color=#ff0000]{} mA [/color]< {} mA\n" \
+                                            "LED2: {} mA <[color=#ff0000]{} mA [/color]< {] mA"\
+                .format(led1[0], curr[0], led1[1], led2[0], curr[1], led2[1])
             self.add_buttons_measurement()
 
     def add_buttons_measurement(self):
@@ -568,6 +571,7 @@ class MainWindow(BoxLayout):
 
 class MeasurementApp(App):
     icon = './icons/icon.png'
+    title = 'LMH-Prüfung 1.0.1'
 
     def build(self):
         w = MainWindow()
