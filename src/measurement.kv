@@ -194,6 +194,52 @@
             text: "Schlie\u00dfen"
             on_release: root.dismiss()
 
+<Exit@Popup>:
+    size_hint: .5, .5
+    auto_dismiss: False
+    title: "Programm schlie\u00dfen"
+    BoxLayout:
+        spacing: 10
+        orientation: "vertical"
+        Label:
+            text: "Programm schlie\u00dfen?"
+        Label:
+            text: "[color=ff0000]Die aktuellen Ergebnisse werden nicht gespeichert![/color]"
+            markup: True
+        Label:
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 40
+            Button:
+                text: "Ja"
+                on_release: app.stop()
+            Button:
+                text: "Abbrechen"
+                on_release: root.dismiss()
+
+<Abort@Popup>:
+    size_hint: .5, .5
+    auto_dismiss: False
+    title: "Messung abbrechen"
+    BoxLayout:
+        spacing: 10
+        orientation: "vertical"
+        Label:
+            text: "Aktuelle Messung abbrechen?"
+        Label:
+            text: "[color=ff0000]Die aktuellen Ergebnisse werden nicht gespeichert![/color]"
+            markup: True
+        Label:
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 40
+            Button:
+                text: "Ja"
+                on_release: root.abort_meas()
+            Button:
+                text: "Messung fortsetzen"
+                on_release: root.dismiss()
+
 <ToolBar>:
     rows: 1
     size_hint_y: None
@@ -295,6 +341,18 @@ MainWindow:
 
     BoxLayout:
         orientation: "horizontal"
+        Button:
+            text: "Programm beenden"
+            size_hint: None, None
+            height: 70
+            width: 200
+            on_release: root.exit()
+        Button:
+            text: "Messung abbrechen"
+            size_hint: None, None
+            height: 70
+            width: 200
+            on_release: root.abort()
         Label:
         BoxLayout:
             orientation: "vertical"

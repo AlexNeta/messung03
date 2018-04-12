@@ -21,6 +21,21 @@ from kivy.uix.label import Label
 # Toolbar
 
 
+class Exit(Popup):
+    pass
+
+
+class Abort(Popup):
+    main = ObjectProperty()
+
+    def build(self, main):
+        self.main = main
+
+    def abort_meas(self):
+        self.main.reset_values()
+        self.dismiss()
+
+
 class About(Popup):
     pass
 
@@ -204,6 +219,19 @@ class MainWindow(BoxLayout):
         except Exception:
             print("Laden war nicht möglich!")
             pass
+
+    # _________________________________________________________________________________________________________________
+    # Abbrechen und Beenden
+
+    @staticmethod
+    def exit():
+        Exit().open()
+
+    def abort(self):
+        n = Abort()
+        n.open()
+        n.build(self)
+
     # _________________________________________________________________________________________________________________
     # Einstellungen
 
@@ -381,8 +409,8 @@ class MainWindow(BoxLayout):
             # Messung liegt nicht im Bereich
             self.meas_in_range.not_found()
             self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich![/color]\n" \
-                                            "LED1: {} mA <[color=#ff0000]{} mA [/color]< {} mA\n" \
-                                            "LED2: {} mA <[color=#ff0000]{} mA [/color]< {} mA"\
+                                            "LED1: {} mA <[color=#ff0000] {} mA [/color]< {} mA\n" \
+                                            "LED2: {} mA <[color=#ff0000] {} mA [/color]< {} mA"\
                 .format(led1[0], curr[0], led1[1], led2[0], curr[1], led2[1])
             self.add_buttons_measurement()
 
@@ -538,17 +566,22 @@ class MainWindow(BoxLayout):
             self.instrument.instr_off(1)
             # Messergebnisse speichern
             self.save_result()
-            # Messung zu Ende neues Fesnster Öffnen
-            self.tester_name = ""
-            self.curr_light = 1
-            # Sequenz zur Erkennung ob Daten ausgefüllt wurden:
-            Clock.schedule_interval(self.init_measurement, 1. / 10.)
-            # Starten des ersten Fensters zum ausfüllen der Daten:
-            Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
+            # Werte zurücksetzen
+            self.reset_values()
+
         else:
             self.instrument.instr_on(0)
             self.instrument.instr_on(1)
             self.disconnect_light()
+
+    def reset_values(self):
+        # Messung zu Ende neues Fesnster Öffnen
+        self.tester_name = ""
+        self.curr_light = 1
+        # Sequenz zur Erkennung ob Daten ausgefüllt wurden:
+        Clock.schedule_interval(self.init_measurement, 1. / 10.)
+        # Starten des ersten Fensters zum ausfüllen der Daten:
+        Clock.schedule_once(lambda dt: self.toolbar.new_file(), 0.2)
 
     # Speichern aller Daten
     def save_result(self):
