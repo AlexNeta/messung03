@@ -5,6 +5,7 @@ from csv import reader, writer, QUOTE_MINIMAL
 from os.path import realpath
 import openpyxl as oxl
 import src.save as save
+import numpy as np
 
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
@@ -417,7 +418,7 @@ class MainWindow(BoxLayout):
             self.meas_in_range_label.text = "[color=#ff0000]Messwerte liegen nicht im Bereich![/color]\n" \
                                             "LED1: {} mA <[color=#ff0000] {} mA [/color]< {} mA\n" \
                                             "LED2: {} mA <[color=#ff0000] {} mA [/color]< {} mA"\
-                .format(led1[0]*1000, curr[0]*1000, led1[1]*1000, led2[0]*1000, curr[1]*1000, led2[1]*1000)
+                .format(*np.round(np.array(led1[0], curr[0], led1[1], led2[0], curr[1], led2[1])*1000, 1))
             self.add_buttons_measurement()
 
     def add_buttons_measurement(self):
